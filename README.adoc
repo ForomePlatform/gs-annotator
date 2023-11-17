@@ -1,0 +1,46 @@
+= GS Annotator
+
+image:https://img.shields.io/badge/vert.x-4.4.6-white.svg[link="https://vertx.io"]
+
+.Supported annotation databases:
+* dbNSFP v4.3a
+* gnomAD v2.1.1
+* SpliceAI v1.3
+* ClinVar
+* GERP
+* dbSNP
+
+== Building
+
+To launch the tests:
+[source]
+----
+./mvnw clean test
+----
+
+To package the application:
+[source]
+----
+./mvnw clean package
+----
+
+To start the application:
+[source]
+----
+./mvnw clean compile exec:java
+----
+
+== Usage examples
+
+The service is only running on *localhost:8000* for now.
+
+To perform annotation of variants in your specified VCF:
+[source]
+----
+curl -F 'famFile=@<path to .fam file>' -F 'cfgFile=@<path to .cfg file>' -F 'c=@<path to .vcf file>' -OJ localhost:8000/annotation
+----
+To stop the service:
+[source]
+----
+curl "localhost:8000/stop"
+----
