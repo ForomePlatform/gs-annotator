@@ -37,7 +37,7 @@ The service is only running on *localhost:8000* for now.
 To perform annotation of variants in your specified VCF:
 [source]
 ----
-curl -F 'famFile=@<path to .fam file>' -F 'cfgFile=@<path to .cfg file>' -F 'c=@<path to .vcf file>' -OJ localhost:8000/annotation
+curl -F 'cfgFile=@<path to .cfg file>' -F 'famFile=@<path to .fam file>' -F 'vcfFile=@<path to .vcf file>' -OJ localhost:8000/annotation
 ----
 To stop the service:
 [source]
