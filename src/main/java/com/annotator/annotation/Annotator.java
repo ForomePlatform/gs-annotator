@@ -1,5 +1,6 @@
 package com.annotator.annotation;
 
+import com.annotator.formatter.Anfisa;
 import com.annotator.utils.Constants;
 import com.annotator.utils.annotation.AnnotatorConstants;
 import com.annotator.utils.annotation.AnnotatorHelper;
@@ -70,6 +71,11 @@ public class Annotator implements Constants, AnnotatorConstants {
 			while (line != null) {
 				String[] values = line.split("\t");
 
+				if (values.length < 5) {
+					line = bufferedReader.readLine();
+					continue;
+				}
+
 				String chr = values[0].substring(3);
 				String pos = values[1];
 				String ref = values[3];
@@ -79,7 +85,9 @@ public class Annotator implements Constants, AnnotatorConstants {
 				JsonObject universalVariantJson = aStorageClient.queryUniversalVariant(refBuild, chr, pos, ref, alt);
 
 				if (universalVariantJson != null) {
-					writer.append(universalVariantJson.toString());
+					Anfisa anfisa = new Anfisa(universalVariantJson);
+					JsonObject anfisaJson = anfisa.extractData();
+					writer.append(anfisaJson.toString());
 					writer.append('\n');
 				}
 

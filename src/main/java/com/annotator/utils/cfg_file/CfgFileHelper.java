@@ -10,7 +10,7 @@ public class CfgFileHelper implements CfgFileConstants {
 		try (
 			FileInputStream fileInputStream = new FileInputStream(cfgFilePath);
 			InputStreamReader reader = new InputStreamReader(fileInputStream, StandardCharsets.UTF_8);
-			BufferedReader bufferedReader = new BufferedReader(reader);
+			BufferedReader bufferedReader = new BufferedReader(reader)
 		) {
 			StringBuilder cfgFile = new StringBuilder();
 
