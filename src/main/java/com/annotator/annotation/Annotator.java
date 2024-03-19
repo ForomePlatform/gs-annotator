@@ -1,6 +1,6 @@
 package com.annotator.annotation;
 
-import com.annotator.formatter.Anfisa;
+import com.annotator.formatter.anfisa.Anfisa;
 import com.annotator.utils.Constants;
 import com.annotator.utils.annotation.AnnotatorConstants;
 import com.annotator.utils.annotation.AnnotatorHelper;
