@@ -7,11 +7,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-public class Anfisa implements Formatter, DbNSFPFieldFormatter, GnomADFieldFormatter {
+public class Anfisa implements DbNSFPFieldFormatter, GnomADFieldFormatter {
     private static final Map<String, Object> ASTORAGE_KEY_MAP = new HashMap<>() {{
         putAll(ASTORAGE_DBNSFP_KEY_MAP);
         putAll(ASTORAGE_GNOMAD_KEY_MAP);
     }};
+
+    @Override
+    public void preprocessData(JsonObject variant) {
+        GnomADFieldFormatter.super.preprocessData(variant);
+    }
 
     private final JsonObject variant;
 
@@ -20,12 +25,10 @@ public class Anfisa implements Formatter, DbNSFPFieldFormatter, GnomADFieldForma
     }
 
     public JsonObject extractData() {
-        JsonObject anfisaJson = new JsonObject();
-
         for (String key : ASTORAGE_KEY_MAP.keySet()) {
             Object valueFinder = ASTORAGE_KEY_MAP.get(key);
-            if (valueFinder instanceof String[] astorageKeyArray) {
-                String value = Formatter.extractValueFromAStorage(this.variant, astorageKeyArray, 0);
+            if (valueFinder instanceof String[] aStorageKeyArray) {
+                String value = Formatter.extractValueFromAStorage(this.variant, aStorageKeyArray, 0);
                 anfisaJson.put(key, value);
             } else if (valueFinder instanceof Function) {
                 Function<JsonObject, String> valueFinderFunction = (Function<JsonObject, String>) valueFinder;

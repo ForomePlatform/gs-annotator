@@ -10,38 +10,38 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public class AStorageClient {
-	private final HttpClient client;
+    private final HttpClient client;
 
-	public AStorageClient() {
-		client = HttpClient.newHttpClient();
-	}
+    public AStorageClient() {
+        client = HttpClient.newHttpClient();
+    }
 
-	public JsonObject queryUniversalVariant(
-		String refBuild,
-		String chr,
-		String pos,
-		String ref,
-		String alt
-	) {
-		URI queryUri = AStorageHelper.createUniversalVariantQuery(refBuild, chr, pos, ref, alt);
+    public JsonObject queryUniversalVariant(
+            String refBuild,
+            String chr,
+            String pos,
+            String ref,
+            String alt
+    ) {
+        URI queryUri = AStorageHelper.createUniversalVariantQuery(refBuild, chr, pos, ref, alt);
 
-		if (queryUri == null) {
-			return null; // TODO: Handle...
-		}
+        if (queryUri == null) {
+            return null; // TODO: Handle...
+        }
 
-		try {
-			HttpRequest astorageRequest = HttpRequest.newBuilder().uri(queryUri).GET().build();
-			HttpResponse<String> response = client.send(astorageRequest, HttpResponse.BodyHandlers.ofString());
+        try {
+            HttpRequest aStorageRequest = HttpRequest.newBuilder().uri(queryUri).GET().build();
+            HttpResponse<String> response = client.send(aStorageRequest, HttpResponse.BodyHandlers.ofString());
 
-			if (response.statusCode() == HttpURLConnection.HTTP_OK) {
-				String responseBody = response.body();
+            if (response.statusCode() == HttpURLConnection.HTTP_OK) {
+                String responseBody = response.body();
 
-				return new JsonObject(responseBody);
-			} else {
-				return null; // TODO: Handle...
-			}
-		} catch (IOException | InterruptedException e) {
-			return null; // TODO: Handle...
-		}
-	}
+                return new JsonObject(responseBody);
+            } else {
+                return null; // TODO: Handle...
+            }
+        } catch (IOException | InterruptedException e) {
+            return null; // TODO: Handle...
+        }
+    }
 }
