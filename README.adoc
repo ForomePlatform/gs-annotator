@@ -1,8 +1,8 @@
-= GS Annotator
+= GSAnnotator-Java
 
 image:https://img.shields.io/badge/vert.x-4.4.6-white.svg[link="https://vertx.io"]
 
-.Supported annotation databases:
+== Supported annotation databases:
 * dbNSFP v4.3a
 * gnomAD v4
 * SpliceAI v1.3
@@ -10,37 +10,39 @@ image:https://img.shields.io/badge/vert.x-4.4.6-white.svg[link="https://vertx.io
 * GERP
 * dbSNP
 
-== Building
+== Setup: Building and Running [Linux/MacOS]
 
-To launch the tests:
-[source]
+Clone the master branch and package the application as a JAR file:
+[source,bash]
 ----
-./mvnw clean test
-----
-
-To package the application:
-[source]
-----
+git clone git@github.com:ForomePlatform/gs-annotator.git
+cd gs-annotator
 ./mvnw clean package
 ----
 
-To start the application:
-[source]
-----
-./mvnw clean compile exec:java
-----
+The JAR file will be generated inside the *target* directory as *annotator-1.0.0.jar*.
 
-== Usage examples
+On the first run the application creates a data folder in the user's home directory by default with the name *GSAnnotator*.
+
+To start the application run:
+[source,bash]
+----
+java -jar annotator-1.0.0.jar
+----
 
 The service is only running on *localhost:8000* for now.
 
+For detailed API specification access the Swagger UI via: http://localhost:8000/swagger.
+
+== Annotation
+
 To perform annotation of variants in your specified VCF:
-[source]
+
+NOTE: To use the annotation service AStorage service should be running on *localhost:8080*.
+
+[source,bash]
 ----
-curl -F 'cfgFile=@<path to .cfg file>' -F 'famFile=@<path to .fam file>' -F 'vcfFile=@<path to .vcf file>' -OJ localhost:8000/annotation
+curl -X POST -OJ 'http://localhost:8000/annotation/anfisa' -H 'accept: application/jsonl' -H 'Content-Type: multipart/form-data' -F 'cfgFile=@<path to .cfg file>' -F 'famFile=@<path to .fam file>' -F 'vcfFile=@<path to .vcf file>'
 ----
-To stop the service:
-[source]
-----
-curl "localhost:8000/stop"
-----
+
+API reference: link:http://localhost:8000/swagger/#/Annotation/post_annotation_anfisa[Swagger Anfisa Annotation].

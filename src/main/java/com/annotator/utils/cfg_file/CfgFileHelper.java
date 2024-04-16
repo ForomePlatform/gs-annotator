@@ -6,7 +6,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 
 public class CfgFileHelper implements CfgFileConstants {
-	public static JsonObject parseCfgFileAsJson(String cfgFilePath) {
+	public static JsonObject parseCfgFileAsJson(String cfgFilePath) throws Exception {
 		try (
 			FileInputStream fileInputStream = new FileInputStream(cfgFilePath);
 			InputStreamReader reader = new InputStreamReader(fileInputStream, StandardCharsets.UTF_8);
@@ -22,8 +22,8 @@ public class CfgFileHelper implements CfgFileConstants {
 			}
 
 			return new JsonObject(cfgFile.toString());
-		} catch (IOException e) {
-			return null; // TODO: Handle...
+		} catch (Exception e) {
+			throw new Exception(CFG_PARSING_ERROR);
 		}
 	}
 

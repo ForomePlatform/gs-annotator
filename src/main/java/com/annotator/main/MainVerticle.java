@@ -10,6 +10,7 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.StaticHandler;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,6 +45,7 @@ public class MainVerticle extends AbstractVerticle implements Constants {
 
 		setAnnotationHandler(router);
 		setStopHandler(router);
+		setSwaggerHandler(router);
 
 		server.requestHandler(router).listen(HTTP_SERVER_PORT, result -> {
 			if (result.succeeded()) {
@@ -78,7 +80,7 @@ public class MainVerticle extends AbstractVerticle implements Constants {
 			USER_HOME + GS_ANNOTATOR_DIRECTORY_NAME + "/uploads"
 		));
 
-		router.post('/' + ANNOTATION_HANLDER_PATH).handler((RoutingContext context) -> {
+		router.post('/' + ANNOTATION_HANLDER_PATH + "/anfisa" ).handler((RoutingContext context) -> {
 			HttpServerRequest req = context.request();
 
 			Callable<String> callable = () -> {
@@ -111,6 +113,10 @@ public class MainVerticle extends AbstractVerticle implements Constants {
 
 			vertx.close();
 		});
+	}
+
+	private void setSwaggerHandler(Router router) {
+		router.route("/*").handler(StaticHandler.create());
 	}
 
 	private boolean initializeDirectories(String dataDirectoryPath) {

@@ -1,0 +1,103 @@
+openapi: 3.0.0
+info:
+  title: GSAnnotator API
+  description: API for annotating variants in your specified VCF.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000/
+    description: Local server
+paths:
+  /annotation/anfisa:
+    post:
+      tags: [
+        Annotation
+      ]
+      summary: Annotates given VCF and returns Anfisa file
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                cfgFile:
+                  type: string
+                  format: binary
+                  example: path to .cfg file
+                famFile:
+                  type: string
+                  format: binary
+                  example: path to .fam file
+                vcfFile:
+                  type: string
+                  format: binary
+                  example: path to .vcf file
+      responses:
+        '200':
+          description: Annotated Anfisa file
+          content:
+            application/jsonl:
+              schema:
+                $ref: '#/components/schemas/AnnotationResult'
+
+  /stop:
+    get:
+      tags: [
+        Utils
+      ]
+      summary: Stops the GSAnnotator service
+      responses:
+        '200':
+          description: Success message in JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+
+components:
+  schemas:
+    SuccessMessage:
+      type: object
+      properties:
+        success:
+          type: string
+          description: Success message
+    AnnotationResult:
+      type: string
+      format: binary
+      example: "JSON lines of annotated Anfisa records..."
+    AnfisaRecord:
+      type: object
+      properties:
+        gnomAD_PopMax_AF:
+          type: string
+          example: "0"
+        gnomAD_PopMax_Outbred:
+          type: string
+          example: "raw"
+        gnomAD_PopMax_AF_Outbred:
+          type: string
+          example: "0"
+        gnomAD_AF_Exomes:
+          type: string
+          example: ""
+        gnomAD_AF_Genomes:
+          type: string
+          example: "7.38894e-05"
+        gnomAD_PopMax:
+          type: string
+          example: "raw"
+        gnomAD_PopMax_AN:
+          type: string
+          example: "141346"
+        gnomAD_Hem:
+          type: string
+          example: "0"
+        gnomAD_Hom:
+          type: string
+          example: "2"
+        gnomAD_AF:
+          type: string
+          example: "0"
+        gnomAD_PopMax_AN_Outbred:
+          type: string
+          example: "141346"

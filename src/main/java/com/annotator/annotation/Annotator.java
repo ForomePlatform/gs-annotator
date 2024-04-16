@@ -31,9 +31,6 @@ public class Annotator implements Constants, AnnotatorConstants {
 
 		// CFG file handling:
 		JsonObject cfgFileJson = CfgFileHelper.parseCfgFileAsJson(filesPaths.get(FilesConstants.CFG_FILE_EXTENSION));
-		if (cfgFileJson == null) {
-			throw new IOException(CfgFileConstants.CFG_PARSING_ERROR);
-		}
 		String refBuild = CfgFileHelper.getAssemblyVersion(cfgFileJson);
 
 		// VCF file handling:
