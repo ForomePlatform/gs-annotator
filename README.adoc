@@ -45,4 +45,6 @@ NOTE: To use the annotation service AStorage service should be running on *local
 curl -X POST -OJ 'http://localhost:8000/annotation/anfisa' -H 'accept: application/jsonl' -H 'Content-Type: multipart/form-data' -F 'cfgFile=@<path to .cfg file>' -F 'famFile=@<path to .fam file>' -F 'vcfFile=@<path to .vcf file>'
 ----
 
+NOTE: For now the FAM file isn't necessary and from the CFG JSON file only *"assembly": "GRCh38"* key-value pair is required.
+
 API reference: link:http://localhost:8000/swagger/#/Annotation/post_annotation_anfisa[Swagger Anfisa Annotation].

@@ -5,7 +5,6 @@ import com.annotator.utils.Constants;
 import com.annotator.utils.annotation.AnnotatorConstants;
 import com.annotator.utils.annotation.AnnotatorHelper;
 import com.annotator.utils.astorage.AStorageClient;
-import com.annotator.utils.cfg_file.CfgFileConstants;
 import com.annotator.utils.cfg_file.CfgFileHelper;
 import com.annotator.utils.files.FilesConstants;
 import com.annotator.utils.files.FilesHelper;
