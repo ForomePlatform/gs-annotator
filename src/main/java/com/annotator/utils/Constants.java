@@ -25,6 +25,7 @@ public interface Constants {
 	String ERROR = "error";
 	String HTTP_SERVER_FAIL = "Server failed to start...";
 	String INITIALIZING_DIRECTORY_ERROR = "Couldn't initialize directories...";
+	String INTERNAL_ERROR = "Internal error...";
 
 	// Helper functions:
 	static void successResponse(HttpServerRequest req, String successMsg) {

@@ -3,16 +3,8 @@ package com.annotator.formatter;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public interface Formatter {
-    Map<String, Object> preprocessedData = new HashMap<>();
-    JsonObject anfisaJson = new JsonObject();
-
-    JsonObject extractData();
-
-    void preprocessData(JsonObject variant);
+    void formatData();
 
     static String extractValueFromAStorage(Object currentObject, String[] aStorageKeyArray, int currentIndex) {
         Object result = extractObjectFromAStorage(currentObject, aStorageKeyArray, currentIndex);
@@ -45,6 +37,8 @@ public interface Formatter {
 
         System.out.print("Unsupported JSON structure for key \"");
         System.out.print(aStorageKeyArray[currentIndex]);
+        System.out.println("\"");
+
         return null;
     }
 }

@@ -91,7 +91,7 @@ public class MainVerticle extends AbstractVerticle implements Constants {
 				if (result.succeeded()) {
 					Constants.fileResponse(req, result.result());
 				} else {
-					String errorMessage = "Internal error...";
+					String errorMessage = INTERNAL_ERROR;
 
 					if (result.cause().getMessage() != null) {
 						errorMessage = result.cause().getMessage();

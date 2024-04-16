@@ -3,40 +3,38 @@ package com.annotator.formatter.anfisa;
 import com.annotator.formatter.Formatter;
 import io.vertx.core.json.JsonObject;
 
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
 
-public class Anfisa implements DbNSFPFieldFormatter, GnomADFieldFormatter {
-    private static final Map<String, Object> ASTORAGE_KEY_MAP = new HashMap<>() {{
-        putAll(ASTORAGE_DBNSFP_KEY_MAP);
-        putAll(ASTORAGE_GNOMAD_KEY_MAP);
-    }};
+public class Anfisa {
+	public static final String[] ANFISA_FIELD_GROUPS = {
+		"GnomAD"
+	};
 
-    @Override
-    public void preprocessData(JsonObject variant) {
-        GnomADFieldFormatter.super.preprocessData(variant);
-    }
+	private final Map<String, Object> preprocessedData;
+	private final JsonObject anfisaJson;
+	private final JsonObject variant;
 
-    private final JsonObject variant;
+	public Anfisa(JsonObject variant) {
+		this.variant = variant;
+		this.preprocessedData = new HashMap<>();
+		this.anfisaJson = new JsonObject();
+	}
 
-    public Anfisa(JsonObject variant) {
-        this.variant = variant;
-    }
+	public JsonObject extractData() throws Exception {
+		for (String fieldGroupName : ANFISA_FIELD_GROUPS) {
+			Class<?> cls = Class.forName("com.annotator.formatter.anfisa." + fieldGroupName + "FieldFormatter");
+			Constructor<?> constructor = cls.getConstructor(
+				JsonObject.class,
+				Map.class,
+				JsonObject.class
+			);
 
-    public JsonObject extractData() {
-        for (String key : ASTORAGE_KEY_MAP.keySet()) {
-            Object valueFinder = ASTORAGE_KEY_MAP.get(key);
-            if (valueFinder instanceof String[] aStorageKeyArray) {
-                String value = Formatter.extractValueFromAStorage(this.variant, aStorageKeyArray, 0);
-                anfisaJson.put(key, value);
-            } else if (valueFinder instanceof Function) {
-                Function<JsonObject, String> valueFinderFunction = (Function<JsonObject, String>) valueFinder;
-                String value = valueFinderFunction.apply(this.variant);
-                anfisaJson.put(key, value);
-            }
-        }
+			Formatter formatter = (Formatter) constructor.newInstance(this.variant, this.preprocessedData, this.anfisaJson);
+			formatter.formatData();
+		}
 
-        return anfisaJson;
-    }
+		return anfisaJson;
+	}
 }

@@ -25,7 +25,7 @@ public class Annotator implements Constants, AnnotatorConstants {
 		this.context = context;
 	}
 
-	public String annotationHandler() throws IOException {
+	public String annotationHandler() throws Exception {
 		// Local paths of uploaded files
 		Map<String, String> filesPaths = FilesHelper.getUploadedFilesPaths(context.fileUploads());
 
@@ -64,6 +64,7 @@ public class Annotator implements Constants, AnnotatorConstants {
 			while (line != null && line.startsWith("#")) {
 				line = bufferedReader.readLine();
 			}
+
 			if (line == null) {
 				throw new IOException(INVALID_VCF_ERROR);
 			}
@@ -96,11 +97,11 @@ public class Annotator implements Constants, AnnotatorConstants {
 
 			// Output the resulted file path
 			return responseFile.getAbsolutePath();
-		} catch (FileNotFoundException e) {
+		} catch (Exception e) {
 			if (!e.getMessage().isEmpty()) {
 				throw e;
 			} else {
-				throw new FileNotFoundException("Uploaded VCF file not found...");
+				throw new Exception(ANNOTATOR_INTERNAL_ERROR);
 			}
 		}
 	}
