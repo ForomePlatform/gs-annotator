@@ -3,8 +3,25 @@ package com.annotator.formatter;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.util.Map;
+import java.util.function.Function;
+
 public interface Formatter {
     void formatData();
+
+    static void formatData(Map<String, Object> anfisaToAStorageMap, JsonObject anfisaJson, JsonObject variant) {
+        for (String key : anfisaToAStorageMap.keySet()) {
+            Object valueFinder = anfisaToAStorageMap.get(key);
+            if (valueFinder instanceof String[] aStorageKeyArray) {
+                String value = Formatter.extractValueFromAStorage(variant, aStorageKeyArray, 0);
+                anfisaJson.put(key, value);
+            } else if (valueFinder instanceof Function) {
+                Function<JsonObject, String> valueFinderFunction = (Function<JsonObject, String>) valueFinder;
+                String value = valueFinderFunction.apply(variant);
+                anfisaJson.put(key, value);
+            }
+        }
+    }
 
     static String extractValueFromAStorage(Object currentObject, String[] aStorageKeyArray, int currentIndex) {
         Object result = extractObjectFromAStorage(currentObject, aStorageKeyArray, currentIndex);

@@ -246,16 +246,6 @@ public class GnomADFieldFormatter implements Formatter {
     }
 
     public void formatData() {
-        for (String key : aStorageGnomADKeyMap.keySet()) {
-            Object valueFinder = aStorageGnomADKeyMap.get(key);
-            if (valueFinder instanceof String[] aStorageKeyArray) {
-                String value = Formatter.extractValueFromAStorage(this.variant, aStorageKeyArray, 0);
-                anfisaJson.put(key, value);
-            } else if (valueFinder instanceof Function) {
-                Function<JsonObject, String> valueFinderFunction = (Function<JsonObject, String>) valueFinder;
-                String value = valueFinderFunction.apply(this.variant);
-                anfisaJson.put(key, value);
-            }
-        }
+        Formatter.formatData(aStorageGnomADKeyMap, anfisaJson, variant);
     }
 }
