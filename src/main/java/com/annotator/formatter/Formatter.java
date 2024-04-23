@@ -12,12 +12,13 @@ public interface Formatter {
     static void formatData(Map<String, Object> anfisaToAStorageMap, JsonObject anfisaJson, JsonObject variant) {
         for (String key : anfisaToAStorageMap.keySet()) {
             Object valueFinder = anfisaToAStorageMap.get(key);
+
             if (valueFinder instanceof String[] aStorageKeyArray) {
                 String value = Formatter.extractValueFromAStorage(variant, aStorageKeyArray, 0);
                 anfisaJson.put(key, value);
             } else if (valueFinder instanceof Function) {
-                Function<JsonObject, String> valueFinderFunction = (Function<JsonObject, String>) valueFinder;
-                String value = valueFinderFunction.apply(variant);
+                Function<JsonObject, Object> valueFinderFunction = (Function<JsonObject, Object>) valueFinder;
+                Object value = valueFinderFunction.apply(variant);
                 anfisaJson.put(key, value);
             }
         }

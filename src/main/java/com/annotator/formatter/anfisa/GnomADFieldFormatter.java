@@ -65,10 +65,10 @@ public class GnomADFieldFormatter implements Formatter {
 
     private Map<String, Object> getAStorageGnomADKeyMap() {
         return new HashMap<>() {{
-            put("gnomAD_AF", (Function<JsonObject, String>) (JsonObject variant) -> {
+            put("gnomAD_AF", (Function<JsonObject, Integer>) (JsonObject variant) -> {
                 JsonArray gnomADArray = (JsonArray) preprocessedData.get("gnomADArray");
                 if (gnomADArray.isEmpty()) {
-                    return "";
+                    return null;
                 }
 
                 int alleleCount = Integer.parseInt(gnomADArray.getJsonObject(0).getString("AC"));
@@ -79,9 +79,9 @@ public class GnomADFieldFormatter implements Formatter {
                     alleleNumber += Integer.parseInt(gnomADArray.getJsonObject(1).getString("AN"));
                 }
 
-                if (alleleNumber == 0) return "";
+                if (alleleNumber == 0) return null;
 
-                return Integer.toString(alleleCount / alleleNumber);
+                return alleleCount / alleleNumber;
             });
             put("gnomAD_AF_Exomes", (Function<JsonObject, String>) (JsonObject variant) -> {
                 JsonArray gnomADArray = (JsonArray) preprocessedData.get("gnomADArray");
@@ -119,13 +119,13 @@ public class GnomADFieldFormatter implements Formatter {
 
                 return maxEntry.getKey();
             });
-            put("gnomAD_PopMax_AF", (Function<JsonObject, String>) (JsonObject variant) -> {
+            put("gnomAD_PopMax_AF", (Function<JsonObject, Integer>) (JsonObject variant) -> {
                 Function<JsonObject, String> getPopMax = (Function<JsonObject, String>) aStorageGnomADKeyMap.get("gnomAD_PopMax");
                 String popMax = anfisaJson.containsKey("gnomAD_PopMax") ? anfisaJson.getString("gnomAD_PopMax") : getPopMax.apply(variant);
                 JsonArray gnomADArray = (JsonArray) preprocessedData.get("gnomADArray");
 
                 if (gnomADArray.isEmpty()) {
-                    return "";
+                    return null;
                 }
 
                 int alleleCount = Integer.parseInt(gnomADArray.getJsonObject(0).getJsonObject(popMax).getString("AC_" + popMax));
@@ -136,17 +136,17 @@ public class GnomADFieldFormatter implements Formatter {
                     alleleNumber += Integer.parseInt(gnomADArray.getJsonObject(1).getJsonObject(popMax).getString("AN_" + popMax));
                 }
 
-                if (alleleNumber == 0) return "";
+                if (alleleNumber == 0) return null;
 
-                return Integer.toString(alleleCount / alleleNumber);
+                return alleleCount / alleleNumber;
             });
-            put("gnomAD_PopMax_AN", (Function<JsonObject, String>) (JsonObject variant) -> {
+            put("gnomAD_PopMax_AN", (Function<JsonObject, Integer>) (JsonObject variant) -> {
                 Function<JsonObject, String> getPopMax = (Function<JsonObject, String>) aStorageGnomADKeyMap.get("gnomAD_PopMax");
                 String popMax = anfisaJson.containsKey("gnomAD_PopMax") ? anfisaJson.getString("gnomAD_PopMax") : getPopMax.apply(variant);
                 JsonArray gnomADArray = (JsonArray) preprocessedData.get("gnomADArray");
 
                 if (gnomADArray.isEmpty()) {
-                    return "";
+                    return null;
                 }
 
                 int alleleNumber = Integer.parseInt(gnomADArray.getJsonObject(0).getJsonObject(popMax).getString("AN_" + popMax));
@@ -155,7 +155,7 @@ public class GnomADFieldFormatter implements Formatter {
                     alleleNumber += Integer.parseInt(gnomADArray.getJsonObject(1).getJsonObject(popMax).getString("AN_" + popMax));
                 }
 
-                return Integer.toString(alleleNumber);
+                return alleleNumber;
             });
             put("gnomAD_PopMax_Outbred", (Function<JsonObject, String>) (JsonObject variant) -> {
                 Map<String, Integer> populationAFMap = (Map<String, Integer>) preprocessedData.get("populationAFMap");
@@ -174,13 +174,13 @@ public class GnomADFieldFormatter implements Formatter {
 
                 return maxEntry.getKey();
             });
-            put("gnomAD_PopMax_AF_Outbred", (Function<JsonObject, String>) (JsonObject variant) -> {
+            put("gnomAD_PopMax_AF_Outbred", (Function<JsonObject, Integer>) (JsonObject variant) -> {
                 Function<JsonObject, String> getPopMax = (Function<JsonObject, String>) aStorageGnomADKeyMap.get("gnomAD_PopMax_Outbred");
                 String popMax = anfisaJson.containsKey("gnomAD_PopMax_Outbred") ? anfisaJson.getString("gnomAD_PopMax_Outbred") : getPopMax.apply(variant);
                 JsonArray gnomADArray = (JsonArray) preprocessedData.get("gnomADArray");
 
                 if (gnomADArray.isEmpty()) {
-                    return "";
+                    return null;
                 }
 
                 int alleleCount = Integer.parseInt(gnomADArray.getJsonObject(0).getJsonObject(popMax).getString("AC_" + popMax));
@@ -191,17 +191,17 @@ public class GnomADFieldFormatter implements Formatter {
                     alleleNumber += Integer.parseInt(gnomADArray.getJsonObject(1).getJsonObject(popMax).getString("AN_" + popMax));
                 }
 
-                if (alleleNumber == 0) return "";
+                if (alleleNumber == 0) return null;
 
-                return Integer.toString(alleleCount / alleleNumber);
+                return alleleCount / alleleNumber;
             });
-            put("gnomAD_PopMax_AN_Outbred", (Function<JsonObject, String>) (JsonObject variant) -> {
+            put("gnomAD_PopMax_AN_Outbred", (Function<JsonObject, Integer>) (JsonObject variant) -> {
                 Function<JsonObject, String> getPopMax = (Function<JsonObject, String>) aStorageGnomADKeyMap.get("gnomAD_PopMax_Outbred");
                 String popMax = anfisaJson.containsKey("gnomAD_PopMax_Outbred") ? anfisaJson.getString("gnomAD_PopMax_Outbred") : getPopMax.apply(variant);
                 JsonArray gnomADArray = (JsonArray) preprocessedData.get("gnomADArray");
 
                 if (gnomADArray.isEmpty()) {
-                    return "";
+                    return null;
                 }
 
                 int alleleNumber = Integer.parseInt(gnomADArray.getJsonObject(0).getJsonObject(popMax).getString("AN_" + popMax));
@@ -210,13 +210,13 @@ public class GnomADFieldFormatter implements Formatter {
                     alleleNumber += Integer.parseInt(gnomADArray.getJsonObject(1).getJsonObject(popMax).getString("AN_" + popMax));
                 }
 
-                return Integer.toString(alleleNumber);
+                return alleleNumber;
             });
-            put("gnomAD_Hom", (Function<JsonObject, String>) (JsonObject variant) -> {
+            put("gnomAD_Hom", (Function<JsonObject, Integer>) (JsonObject variant) -> {
                 JsonArray gnomADArray = (JsonArray) preprocessedData.get("gnomADArray");
 
                 if (gnomADArray.isEmpty()) {
-                    return "";
+                    return null;
                 }
 
                 int nhomalt = Integer.parseInt(gnomADArray.getJsonObject(0).getString("nhomalt"));
@@ -225,13 +225,13 @@ public class GnomADFieldFormatter implements Formatter {
                     nhomalt += Integer.parseInt(gnomADArray.getJsonObject(1).getString("nhomalt"));
                 }
 
-                return Integer.toString(nhomalt);
+                return nhomalt;
             });
-            put("gnomAD_Hem", (Function<JsonObject, String>) (JsonObject variant) -> {
+            put("gnomAD_Hem", (Function<JsonObject, Integer>) (JsonObject variant) -> {
                 JsonArray gnomADArray = (JsonArray) preprocessedData.get("gnomADArray");
 
                 if (gnomADArray.isEmpty()) {
-                    return "";
+                    return null;
                 }
 
                 int nhomaltXY = Integer.parseInt(gnomADArray.getJsonObject(0).getString("nhomalt_XY"));
@@ -240,7 +240,7 @@ public class GnomADFieldFormatter implements Formatter {
                     nhomaltXY += Integer.parseInt(gnomADArray.getJsonObject(1).getString("nhomalt_XY"));
                 }
 
-                return Integer.toString(nhomaltXY);
+                return nhomaltXY;
             });
         }};
     }

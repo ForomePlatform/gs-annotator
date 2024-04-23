@@ -28,56 +28,64 @@ public class ClinVarFieldFormatter implements Formatter {
 
     private Map<String, Object> getAStorageClinVarKeyMap() {
         return new HashMap<>() {{
-            put("ClinVar_Submitters", (Function<JsonObject, String>) (JsonObject variant) -> {
-                JsonObject clinVarObject = variant.getJsonObject("ClinVar");
-                if (clinVarObject.isEmpty()) {
-                    return "";
+            put("ClinVar_Submitters", (Function<JsonObject, JsonArray>) (JsonObject variant) -> {
+                JsonArray clinVarArray = variant.getJsonArray("ClinVar");
+                if (clinVarArray.isEmpty()) {
+                    return new JsonArray();
                 }
 
+                JsonObject clinVarObject = clinVarArray.getJsonObject(0);
                 JsonArray significances = clinVarObject.getJsonArray("Significances");
-                JsonArray submitters = new JsonArray(significances.stream().map((Object significanceEntry) -> ((JsonObject) significanceEntry).getJsonObject("Submitter")).toList());
 
-                return String.valueOf(submitters);
+				return new JsonArray(significances.stream().map((Object significanceEntry) -> ((JsonObject) significanceEntry).getJsonObject("Submitter")).toList());
             });
-            put("Number_of_clinvar_submitters", (Function<JsonObject, String>) (JsonObject variant) -> {
-                JsonObject clinVarObject = variant.getJsonObject("ClinVar");
-                if (clinVarObject.isEmpty()) {
-                    return "";
+            put("Number_of_clinvar_submitters", (Function<JsonObject, Integer>) (JsonObject variant) -> {
+                JsonArray clinVarArray = variant.getJsonArray("ClinVar");
+                if (clinVarArray.isEmpty()) {
+                    return null;
                 }
 
-                int numberOfSubmitters = clinVarObject.getJsonArray("Significances").size();
+                JsonObject clinVarObject = clinVarArray.getJsonObject(0);
 
-                return Integer.toString(numberOfSubmitters);
+				return clinVarObject.getJsonArray("Significances").size();
             });
             put("ReviewStatus", (Function<JsonObject, String>) (JsonObject variant) -> {
-                JsonObject clinVarObject = variant.getJsonObject("ClinVar");
-                if (clinVarObject.isEmpty()) {
+                JsonArray clinVarArray = variant.getJsonArray("ClinVar");
+                if (clinVarArray.isEmpty()) {
                     return "";
                 }
+
+                JsonObject clinVarObject = clinVarArray.getJsonObject(0);
 
                 return clinVarObject.getString("ReviewStatus");
             });
-            put("Clinvar_criteria_provided", (Function<JsonObject, String>) (JsonObject variant) -> {
-                JsonObject clinVarObject = variant.getJsonObject("ClinVar");
-                if (clinVarObject.isEmpty()) {
-                    return "";
+            put("Clinvar_criteria_provided", (Function<JsonObject, Boolean>) (JsonObject variant) -> {
+                JsonArray clinVarArray = variant.getJsonArray("ClinVar");
+                if (clinVarArray.isEmpty()) {
+                    return null;
                 }
 
-                return clinVarObject.getString("ReviewStatus").contains(REVIEW_STATUS_CRITERIA_PROVIDED) ? "true" : "false";
+                JsonObject clinVarObject = clinVarArray.getJsonObject(0);
+
+                return clinVarObject.getString("ReviewStatus").contains(REVIEW_STATUS_CRITERIA_PROVIDED);
             });
-            put("Clinvar_conflicts", (Function<JsonObject, String>) (JsonObject variant) -> {
-                JsonObject clinVarObject = variant.getJsonObject("ClinVar");
-                if (clinVarObject.isEmpty()) {
-                    return "";
+            put("Clinvar_conflicts", (Function<JsonObject, Boolean>) (JsonObject variant) -> {
+                JsonArray clinVarArray = variant.getJsonArray("ClinVar");
+                if (clinVarArray.isEmpty()) {
+                    return null;
                 }
 
-                return clinVarObject.getString("ReviewStatus").contains(REVIEW_STATUS_NO_CONFLICTS) ? "false" : "true";
+                JsonObject clinVarObject = clinVarArray.getJsonObject(0);
+
+                return !clinVarObject.getString("ReviewStatus").contains(REVIEW_STATUS_NO_CONFLICTS);
             });
             put("Clinvar_acmg_guidelines", (Function<JsonObject, String>) (JsonObject variant) -> {
-                JsonObject clinVarObject = variant.getJsonObject("ClinVar");
-                if (clinVarObject.isEmpty()) {
+                JsonArray clinVarArray = variant.getJsonArray("ClinVar");
+                if (clinVarArray.isEmpty()) {
                     return "";
                 }
+
+                JsonObject clinVarObject = clinVarArray.getJsonObject(0);
 
                 return clinVarObject.getString("Guidelines");
             });
