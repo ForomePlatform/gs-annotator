@@ -91,7 +91,7 @@ public class GnomADFieldFormatter implements Formatter {
                     }
                 }
 
-                return "";
+                return null;
             });
             put("gnomAD_AF_Genomes", (Function<JsonObject, String>) (JsonObject variant) -> {
                 JsonArray gnomADArray = (JsonArray) preprocessedData.get("gnomADArray");
@@ -101,7 +101,7 @@ public class GnomADFieldFormatter implements Formatter {
                     }
                 }
 
-                return "";
+                return null;
             });
             put("gnomAD_PopMax", (Function<JsonObject, String>) (JsonObject variant) -> {
                 Map<String, Integer> populationAFMap = (Map<String, Integer>) preprocessedData.get("populationAFMap");
@@ -114,7 +114,7 @@ public class GnomADFieldFormatter implements Formatter {
                 }
 
                 if (maxEntry == null) {
-                    return "";
+                    return null;
                 }
 
                 return maxEntry.getKey();
@@ -169,7 +169,7 @@ public class GnomADFieldFormatter implements Formatter {
                 }
 
                 if (maxEntry == null) {
-                    return "";
+                    return null;
                 }
 
                 return maxEntry.getKey();
