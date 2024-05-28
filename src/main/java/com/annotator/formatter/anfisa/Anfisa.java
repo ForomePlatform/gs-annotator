@@ -10,7 +10,9 @@ import java.util.Map;
 public class Anfisa {
     public static final String[] ANFISA_FIELD_GROUPS = {
             "GnomAD",
-            "ClinVar"
+            "ClinVar",
+            "DbNSFP",
+            "SpliceAI"
     };
 
     private final Map<String, Object> preprocessedData;
