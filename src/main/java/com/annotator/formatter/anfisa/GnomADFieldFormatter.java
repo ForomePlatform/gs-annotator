@@ -79,7 +79,9 @@ public class GnomADFieldFormatter implements Formatter {
                     alleleNumber += Integer.parseInt(gnomADArray.getJsonObject(1).getString("AN"));
                 }
 
-                if (alleleNumber == 0) return null;
+                if (alleleNumber == 0) {
+                    return null;
+                }
 
                 return alleleCount / alleleNumber;
             });
@@ -136,7 +138,9 @@ public class GnomADFieldFormatter implements Formatter {
                     alleleNumber += Integer.parseInt(gnomADArray.getJsonObject(1).getJsonObject(popMax).getString("AN_" + popMax));
                 }
 
-                if (alleleNumber == 0) return null;
+                if (alleleNumber == 0) {
+                    return null;
+                }
 
                 return alleleCount / alleleNumber;
             });
@@ -191,7 +195,9 @@ public class GnomADFieldFormatter implements Formatter {
                     alleleNumber += Integer.parseInt(gnomADArray.getJsonObject(1).getJsonObject(popMax).getString("AN_" + popMax));
                 }
 
-                if (alleleNumber == 0) return null;
+                if (alleleNumber == 0) {
+                    return null;
+                }
 
                 return alleleCount / alleleNumber;
             });

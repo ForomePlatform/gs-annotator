@@ -41,7 +41,7 @@ public class DbNSFPFieldFormatter implements Formatter {
                 JsonArray facetTranscripts = ((JsonObject) dbNSFPFacet).getJsonArray("transcripts");
                 for (int i = 0; i < facetTranscripts.size(); i++) {
                     JsonObject newTranscript = new JsonObject(facetTranscripts.getValue(i).toString());
-                    newTranscript.put("orderId", i);
+                    newTranscript.put("order_id", i);
                     transcripts.add(newTranscript);
                 }
             });
@@ -50,15 +50,13 @@ public class DbNSFPFieldFormatter implements Formatter {
 
     private Map<String, Object> getAStorageClinVarKeyMap() {
         return new HashMap<>() {{
-            put("transcripts", (Function<JsonObject, String>) (JsonObject variant) -> {
+            put("transcripts", (Function<JsonObject, JsonArray>) (JsonObject variant) -> {
                 JsonArray dbNSFPArray = variant.getJsonArray("DbNSFP");
                 if (dbNSFPArray.isEmpty()) {
                     return null;
                 }
 
-                JsonArray transcripts = (JsonArray) preprocessedData.get("dbNSFPTranscripts");
-
-                return transcripts.toString();
+                return (JsonArray) preprocessedData.get("dbNSFPTranscripts");
             });
         }};
     }

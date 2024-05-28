@@ -37,15 +37,48 @@ public class ClinVarFieldFormatter implements Formatter {
     private final JsonObject anfisaJson;
     private final JsonObject variant;
     private final Map<String, Object> aStorageClinVarKeyMap;
+    private final Map<String, Object> preprocessedData;
 
     public ClinVarFieldFormatter(JsonObject variant, Map<String, Object> preprocessedData, JsonObject anfisaJson) {
         this.variant = variant;
+        this.preprocessedData = preprocessedData;
         this.anfisaJson = anfisaJson;
         this.aStorageClinVarKeyMap = getAStorageClinVarKeyMap();
         this.preprocessData();
     }
 
     private void preprocessData() {
+        JsonArray clinVarArray = variant.getJsonArray("ClinVar");
+        if (clinVarArray.isEmpty()) {
+            return;
+        }
+
+        JsonObject clinVarObject = clinVarArray.getJsonObject(0);
+        JsonArray significances = clinVarObject.getJsonArray("Significances");
+
+        this.preprocessedData.put("clinVarTrustedSignificance", new JsonArray(significances.stream()
+                .filter((Object significanceEntry) ->
+                        TRUSTED_SUBMITTERS.contains(
+                                ((JsonObject) significanceEntry).getJsonObject("Submitter")
+                                        .getString("SubmitterName")))
+                .map((Object significanceEntry) ->
+                        ((JsonObject) significanceEntry).getString("ClinicalSignificance"))
+                .toList()));
+    }
+
+    private int getSimplifiedSignificanceCategorization(JsonArray significances) {
+        List<String> pathogenicCategorization = new ArrayList<>() {{
+            add("Likely pathogenic");
+            add("Pathogenic");
+        }};
+
+        for (Object significance : significances) {
+            if (pathogenicCategorization.contains((String) significance)) {
+                return 1;
+            }
+        }
+
+        return 0;
     }
 
     private Map<String, Object> getAStorageClinVarKeyMap() {
@@ -81,32 +114,15 @@ public class ClinVarFieldFormatter implements Formatter {
                 JsonObject clinVarObject = clinVarArray.getJsonObject(0);
                 return clinVarObject.getString("ClinicalSignificance");
             });
-            put("clinvar_trusted_significance", (Function<JsonObject, JsonArray>) (JsonObject variant) -> {
-                JsonArray clinVarArray = variant.getJsonArray("ClinVar");
-                if (clinVarArray.isEmpty()) {
-                    return null;
-                }
-
-                JsonObject clinVarObject = clinVarArray.getJsonObject(0);
-                JsonArray significances = clinVarObject.getJsonArray("Significances");
-
-                return new JsonArray(significances.stream()
-                        .filter((Object significanceEntry) ->
-                                TRUSTED_SUBMITTERS.contains(
-                                        ((JsonObject) significanceEntry).getJsonObject("Submitter")
-                                                .getString("SubmitterName")))
-                        .map((Object significanceEntry) ->
-                                ((JsonObject) significanceEntry).getString("ClinicalSignificance"))
-                        .toList());
-            });
+            put("clinvar_trusted_significance", (Function<JsonObject, JsonArray>) (JsonObject variant) ->
+                    (JsonArray) preprocessedData.get("clinVarTrustedSignificance"));
             put("clinvar_trusted_simplified", (Function<JsonObject, Integer>) (JsonObject variant) -> {
-                JsonArray clinVarArray = variant.getJsonArray("ClinVar");
-                if (clinVarArray.isEmpty()) {
+                JsonArray trustedSignificance = (JsonArray) preprocessedData.get("clinVarTrustedSignificance");
+                if (trustedSignificance == null) {
                     return null;
                 }
 
-                JsonObject clinVarObject = clinVarArray.getJsonObject(0);
-                return Integer.parseInt(clinVarObject.getString("ClinSigSimple"));
+                return getSimplifiedSignificanceCategorization(trustedSignificance);
             });
             put("clinvar_stars", (Function<JsonObject, String>) (JsonObject variant) -> {
                 JsonArray clinVarArray = variant.getJsonArray("ClinVar");
