@@ -26,7 +26,7 @@ public class GERPFieldFormatter implements Formatter {
 
     private Map<String, Object> getGerpKeyMap() {
         return new HashMap<>() {{
-            put("gerp_score", (Function<JsonObject, Integer>) (JsonObject variant) -> {
+            put("gerp_score", (Function<JsonObject, Double>) (JsonObject variant) -> {
                 JsonArray gerpArray = variant.getJsonArray("GERP");
                 if (gerpArray.isEmpty()) {
                     return null;
@@ -34,7 +34,7 @@ public class GERPFieldFormatter implements Formatter {
 
                 JsonArray gerpObject = gerpArray.getJsonArray(0);
 
-                return Integer.valueOf(gerpObject.getString(0));
+                return Double.valueOf(gerpObject.getString(1));
             });
         }};
     }
