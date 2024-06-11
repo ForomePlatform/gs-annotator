@@ -12,7 +12,7 @@ public class Anfisa {
             "GnomAD",
             "ClinVar",
             "DbNSFP",
-            "SpliceAI"
+//            "SpliceAI"
     };
 
     private final Map<String, Object> preprocessedData;

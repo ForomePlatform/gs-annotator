@@ -94,9 +94,10 @@ public class Annotator implements Constants, AnnotatorConstants {
 			// Output the resulted file path
 			return responseFile.getAbsolutePath();
 		} catch (Exception e) {
-			if (!e.getMessage().isEmpty()) {
+			if (e.getMessage() != null && !e.getMessage().isEmpty()) {
 				throw e;
 			} else {
+				e.printStackTrace();
 				throw new Exception(ANNOTATOR_INTERNAL_ERROR);
 			}
 		}

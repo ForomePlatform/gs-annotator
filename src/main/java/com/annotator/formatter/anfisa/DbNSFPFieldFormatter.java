@@ -19,7 +19,7 @@ public class DbNSFPFieldFormatter implements Formatter {
         this.variant = variant;
         this.preprocessedData = preprocessedData;
         this.anfisaJson = anfisaJson;
-        this.aStorageDbNSFPKeyMap = getAStorageClinVarKeyMap();
+        this.aStorageDbNSFPKeyMap = getAStorageDbNSFPKeyMap();
         this.preprocessData();
     }
 
@@ -48,7 +48,7 @@ public class DbNSFPFieldFormatter implements Formatter {
         });
     }
 
-    private Map<String, Object> getAStorageClinVarKeyMap() {
+    private Map<String, Object> getAStorageDbNSFPKeyMap() {
         return new HashMap<>() {{
             put("transcripts", (Function<JsonObject, JsonArray>) (JsonObject variant) -> {
                 JsonArray dbNSFPArray = variant.getJsonArray("DbNSFP");

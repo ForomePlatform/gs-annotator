@@ -4,8 +4,6 @@ import com.annotator.formatter.Formatter;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -21,11 +19,11 @@ public class SpliceAIFieldFormatter implements Formatter {
         this.variant = variant;
         this.preprocessedData = preprocessedData;
         this.anfisaJson = anfisaJson;
-        this.aStorageSpliceAIKeyMap = getAStorageClinVarKeyMap();
+        this.aStorageSpliceAIKeyMap = getAStorageSpliceAIKeyMap();
         this.preprocessData();
     }
 
-    private String getSpliceAlteringCategorization(int dsMaxScore) {
+    private String getSpliceAlteringCategorization(float dsMaxScore) {
         if (dsMaxScore < 0.2) {
             return "unlikely";
         } else if (dsMaxScore < 0.5) {
@@ -45,26 +43,22 @@ public class SpliceAIFieldFormatter implements Formatter {
 
         JsonObject spliceAIObject = spliceAIArray.getJsonObject(0);
 
-        int dsAg = Integer.parseInt(spliceAIObject.getString("DS_AG"));
-        int dsDg = Integer.parseInt(spliceAIObject.getString("DS_DG"));
-        int dsAl = Integer.parseInt(spliceAIObject.getString("DS_AL"));
-        int dsDl = Integer.parseInt(spliceAIObject.getString("DS_DL"));
-
-        this.preprocessedData.put("spliceAIDsMax", Collections.max(Arrays.asList(dsAg, dsDg, dsAl, dsDl)));
+        float maxDs = Float.parseFloat(spliceAIObject.getString("MAX_DS"));
+        this.preprocessedData.put("spliceAIDsMax", maxDs);
     }
 
-    private Map<String, Object> getAStorageClinVarKeyMap() {
+    private Map<String, Object> getAStorageSpliceAIKeyMap() {
         return new HashMap<>() {{
             put("splice_altering", (Function<JsonObject, String>) (JsonObject variant) -> {
-                Integer dsMax = (Integer) preprocessedData.get("spliceAIDsMax");
+                Float dsMax = (Float) preprocessedData.get("spliceAIDsMax");
                 if (dsMax == null) {
                     return null;
                 }
 
                 return getSpliceAlteringCategorization(dsMax);
             });
-            put("splice_ai_dsmax", (Function<JsonObject, Integer>) (JsonObject variant) ->
-                    (Integer) preprocessedData.get("spliceAIDsMax"));
+            put("splice_ai_dsmax", (Function<JsonObject, Float>) (JsonObject variant) ->
+                    (Float) preprocessedData.get("spliceAIDsMax"));
         }};
     }
 
