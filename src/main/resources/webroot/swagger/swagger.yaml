@@ -66,38 +66,110 @@ components:
       format: binary
       example: "JSON lines of annotated Anfisa records..."
     AnfisaRecord:
+      allOf:
+        - $ref: '#/components/schemas/GnomADRecord'
+        - $ref: '#/components/schemas/ClinVarRecord'
+    GnomADRecord:
       type: object
       properties:
-        gnomAD_PopMax_AF:
+        gnomad_af:
+          type: integer
+          example: 0
+          nullable: true
+        gnomad_af_exomes:
           type: string
-          example: "0"
-        gnomAD_PopMax_Outbred:
+          example: "0.00000"
+          nullable: true
+        gnomad_af_genomes:
           type: string
-          example: "raw"
-        gnomAD_PopMax_AF_Outbred:
+          example: "0.00000"
+          nullable: true
+        gnomad_popmax:
           type: string
-          example: "0"
-        gnomAD_AF_Exomes:
+          example: "XX"
+          nullable: true
+        gnomad_popmax_af:
+          type: integer
+          example: 0
+          nullable: true
+        gnomad_popmax_an:
+          type: integer
+          example: 0
+          nullable: true
+        gnomad_popmax_outbred:
           type: string
-          example: ""
-        gnomAD_AF_Genomes:
+          example: "XX"
+          nullable: true
+        gnomad_popmax_af_outbred:
+          type: integer
+          example: 0
+          nullable: true
+        gnomad_popmax_an_outbred:
+          type: integer
+          example: 20
+          nullable: true
+        gnomad_hom:
+          type: integer
+          example: 0
+          nullable: true
+        gnomad_hem:
+          type: integer
+          example: 0
+          nullable: true
+    ClinVarRecord:
+      type: object
+      properties:
+        clinvar_submitters:
+          type: array
+          items:
+            type: object
+            properties:
+              SubmitterID:
+                type: string
+                example: "3"
+              SubmitterName:
+                type: string
+                example: "OMIM"
+          nullable: true
+        clinvar_benign:
+          type: boolean
+          example: false
+          nullable: true
+        clinvar_significance:
           type: string
-          example: "7.38894e-05"
-        gnomAD_PopMax:
+          example: "Pathogenic"
+          nullable: true
+        clinvar_trusted_significance:
+          type: array
+          items:
+            type: string
+            example: "\\n"
+          nullable: true
+        clinvar_trusted_simplified:
+          type: integer
+          example: 0
+          nullable: true
+        clinvar_stars:
           type: string
-          example: "raw"
-        gnomAD_PopMax_AN:
+          example: "two"
+          nullable: true
+        number_of_clinvar_submitters:
+          type: integer
+          example: 2
+          nullable: true
+        clinvar_review_status:
           type: string
-          example: "141346"
-        gnomAD_Hem:
+          example: "criteria provided, multiple submitters, no conflicts"
+          nullable: true
+        clinvar_criteria_provided:
+          type: boolean
+          example: true
+          nullable: true
+        clinvar_conflicts:
+          type: boolean
+          example: false
+          nullable: true
+        clinvar_acmg_guidelines:
           type: string
-          example: "0"
-        gnomAD_Hom:
-          type: string
-          example: "2"
-        gnomAD_AF:
-          type: string
-          example: "0"
-        gnomAD_PopMax_AN_Outbred:
-          type: string
-          example: "141346"
+          example: "-"
+          nullable: true
