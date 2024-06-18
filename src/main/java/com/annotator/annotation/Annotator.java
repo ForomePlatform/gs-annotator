@@ -6,8 +6,10 @@ import com.annotator.utils.annotation.AnnotatorConstants;
 import com.annotator.utils.annotation.AnnotatorHelper;
 import com.annotator.utils.astorage.AStorageClient;
 import com.annotator.utils.cfg_file.CfgFileHelper;
+import com.annotator.utils.fam_file.FamFileHelper;
 import com.annotator.utils.files.FilesConstants;
 import com.annotator.utils.files.FilesHelper;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
@@ -31,6 +33,10 @@ public class Annotator implements Constants, AnnotatorConstants {
 		// CFG file handling:
 		JsonObject cfgFileJson = CfgFileHelper.parseCfgFileAsJson(filesPaths.get(FilesConstants.CFG_FILE_EXTENSION));
 		String refBuild = CfgFileHelper.getAssemblyVersion(cfgFileJson);
+
+		// FAM file handling:
+		JsonArray famFileJson = FamFileHelper.parseFamFileAsJson(filesPaths.get(FilesConstants.FAM_FILE_EXTENSION));
+		String phenotypeValue = FamFileHelper.getPhenotypeValue(famFileJson);
 
 		// VCF file handling:
 		String vcfFilePath = filesPaths.get(FilesConstants.VCF_FILE_EXTENSION);
