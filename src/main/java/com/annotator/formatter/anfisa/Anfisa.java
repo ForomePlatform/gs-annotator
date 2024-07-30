@@ -7,6 +7,7 @@ import io.vertx.core.json.JsonObject;
 
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Anfisa implements AnfisaConstants {
@@ -23,7 +24,7 @@ public class Anfisa implements AnfisaConstants {
     private final Map<String, Object> preprocessedData;
     private final JsonObject anfisaJson;
 
-    public Anfisa(JsonObject variant, JsonArray famJson, Integer[] mappedGt) {
+    public Anfisa(JsonObject variant, JsonArray famJson, List<Integer> mappedGt) {
         this.variant = variant;
         this.preprocessedData = new HashMap<>();
         this.preprocessedData.put(FAM_JSON_PREPROCESSED_DATA_MAP_KEY, famJson);

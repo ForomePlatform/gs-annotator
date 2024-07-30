@@ -13,12 +13,16 @@ import com.annotator.utils.vcf_file.VcfFileHelper;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import javafx.util.Pair;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.IntStream;
+
+import static com.annotator.utils.fam_file.FamFileConstants.WITHIN_FAMILY_ID_KEY;
 
 public class Annotator implements Constants, AnnotatorConstants {
 	private final RoutingContext context;
@@ -64,16 +68,30 @@ public class Annotator implements Constants, AnnotatorConstants {
 
 			// Start reading the input file
 			String line = bufferedReader.readLine();
-			while (line != null && line.startsWith("#")) {
+			while (line != null && line.startsWith("##")) {
 				line = bufferedReader.readLine();
 			}
 
-			if (line == null) {
+			if (line == null || !line.startsWith("#")) {
 				throw new IOException(INVALID_VCF_ERROR);
 			}
 
+			List<String> vcfSamples = new ArrayList<>();
+			Map<String, Integer> sampleNameIndices = new HashMap<>();
+			String[] splitVcfLine = line.split("\t");
+			if (splitVcfLine.length > 8) {
+				vcfSamples.addAll(Arrays.asList(splitVcfLine).subList(9, splitVcfLine.length));
+			}
+
+			for (int i = 0; i < famJson.size(); i++) {
+				String sampleName = famJson.getJsonObject(i).getString(WITHIN_FAMILY_ID_KEY);
+				sampleNameIndices.put(sampleName, i);
+			}
+
+			line = bufferedReader.readLine();
+
 			while (line != null) {
-				String[] splitVcfLine = line.split("\t");
+				splitVcfLine = line.split("\t");
 
 				if (splitVcfLine.length < 5) {
 					line = bufferedReader.readLine();
@@ -84,14 +102,21 @@ public class Annotator implements Constants, AnnotatorConstants {
 				String pos = splitVcfLine[1];
 				String ref = splitVcfLine[3];
 				String alt = splitVcfLine[4];
-				String[] vcfGtData = VcfFileHelper.getVcfGtData(splitVcfLine);
-				Integer[] mappedGt = VcfFileHelper.mapVcfGtData(vcfGtData);
+				List<String> vcfGtData = VcfFileHelper.getVcfGtData(splitVcfLine);
+				List<Integer> mappedGt = VcfFileHelper.mapVcfGtData(vcfGtData);
+				List<Integer> mappedSortedGtList =
+						mappedGt == null ? null
+						: IntStream.range(0, mappedGt.size())
+								.mapToObj(i -> new Pair<>(vcfSamples.get(i), mappedGt.get(i)))
+								.sorted(Comparator.comparingInt(gtKeyValue -> sampleNameIndices.get(gtKeyValue.getKey())))
+								.map(Pair::getValue)
+								.toList();
 
 				AStorageClient aStorageClient = new AStorageClient();
 				JsonObject universalVariantJson = aStorageClient.queryUniversalVariant(refBuild, chr, pos, ref, alt);
 
 				if (universalVariantJson != null) {
-					Anfisa anfisa = new Anfisa(universalVariantJson, famJson, mappedGt);
+					Anfisa anfisa = new Anfisa(universalVariantJson, famJson, mappedSortedGtList);
 					JsonObject anfisaJson = anfisa.extractData();
 					writer.append(anfisaJson.toString());
 					writer.append('\n');

@@ -44,12 +44,12 @@ public class FamFileHelper implements FamFileConstants {
 		}
 	}
 
-	public static String getPhenotypeValue(JsonArray famFileJson) {
-		if (famFileJson.isEmpty()) {
+	public static String getPhenotypeValue(JsonArray famJson) {
+		if (famJson.isEmpty()) {
 			return MISSING_DATA;
 		}
 
-		JsonObject firstLine = famFileJson.getJsonObject(0);
+		JsonObject firstLine = famJson.getJsonObject(0);
 		String phenotypeValueString = firstLine.getString(PHENOTYPE_VALUE_KEY);
 
 		try {

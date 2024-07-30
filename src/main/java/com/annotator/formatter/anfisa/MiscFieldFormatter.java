@@ -5,8 +5,8 @@ import com.annotator.utils.formatter.anfisa.AnfisaConstants;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -27,12 +27,12 @@ public class MiscFieldFormatter implements Formatter {
     private Map<String, Object> getMiscKeyMap() {
         return new HashMap<>() {{
             put("zygosity", (Supplier<JsonArray>) () -> {
-                Integer[] mappedGt = (Integer[]) preprocessedData.get(AnfisaConstants.MAPPED_GT_PREPROCESSED_DATA_MAP_KEY);
+                List<Integer> mappedGt = (List<Integer>) preprocessedData.get(AnfisaConstants.MAPPED_GT_PREPROCESSED_DATA_MAP_KEY);
                 if (mappedGt == null) {
                     return null;
                 }
 
-                return new JsonArray(Arrays.stream(mappedGt).toList());
+                return new JsonArray(mappedGt);
             });
         }};
     }

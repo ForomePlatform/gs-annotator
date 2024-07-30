@@ -1,24 +1,25 @@
 package com.annotator.utils.vcf_file;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class VcfFileHelper {
-    public static String[] getVcfGtData(String[] splitVcfLine) {
-        if (splitVcfLine.length < 12) {
+    public static List<String> getVcfGtData(String[] splitVcfLine) {
+        if (!(splitVcfLine.length > 8)) {
             return null;
         }
 
-        int indexOfGt = Arrays.stream(splitVcfLine[8].split(":")).toList().indexOf("GT");
+        int indexOfGt = Arrays.asList(splitVcfLine[8].split(":")).indexOf("GT");
 
         if (indexOfGt == -1) {
             return null;
         }
 
-        String[] fam1Data = splitVcfLine[9].split(":");
-        String[] fam2Data = splitVcfLine[10].split(":");
-        String[] fam3Data = splitVcfLine[11].split(":");
-
-        return new String[]{fam1Data[indexOfGt], fam2Data[indexOfGt], fam3Data[indexOfGt]};
+        return Arrays.asList(splitVcfLine)
+                .subList(9, splitVcfLine.length).stream()
+                .map((genotypeValues) -> genotypeValues.split(":")[indexOfGt]).toList();
     }
 
     /**
@@ -32,24 +33,23 @@ public class VcfFileHelper {
      * @param vcfGtData String array of VCF GT data for all fam members.
      * @return int array of parsed VCF GT data.
      */
-    public static Integer[] mapVcfGtData(String[] vcfGtData) {
+    public static List<Integer> mapVcfGtData(List<String> vcfGtData) {
         if (vcfGtData == null) {
             return null;
         }
 
-        Integer[] parsedVcfGtData = new Integer[vcfGtData.length];
-        Arrays.fill(parsedVcfGtData, 0);
+        List<Integer> parsedVcfGtData = new ArrayList<>(Collections.nCopies(vcfGtData.size(), 0));
 
-        for (int i = 0; i < vcfGtData.length; i++) {
-            String currGt = vcfGtData[i];
+        for (int i = 0; i < vcfGtData.size(); i++) {
+            String currGt = vcfGtData.get(i);
 
             if (currGt.length() == 1 && currGt.charAt(0) == '1') {
-                parsedVcfGtData[i] = 1;
+                parsedVcfGtData.set(i, 1);
             } else if ((currGt.charAt(0) == '0' && currGt.charAt(2) == '1')
                     || (currGt.charAt(0) == '1' && currGt.charAt(2) == '0')) {
-                parsedVcfGtData[i] = 1;
+                parsedVcfGtData.set(i, 1);
             } else if (currGt.charAt(0) == '1' && currGt.charAt(2) == '1') {
-                parsedVcfGtData[i] = 2;
+                parsedVcfGtData.set(i, 2);
             }
         }
 
