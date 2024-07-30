@@ -9,6 +9,7 @@ import com.annotator.utils.cfg_file.CfgFileHelper;
 import com.annotator.utils.fam_file.FamFileHelper;
 import com.annotator.utils.files.FilesConstants;
 import com.annotator.utils.files.FilesHelper;
+import com.annotator.utils.vcf_file.VcfFileHelper;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -31,12 +32,12 @@ public class Annotator implements Constants, AnnotatorConstants {
 		Map<String, String> filesPaths = FilesHelper.getUploadedFilesPaths(context.fileUploads());
 
 		// CFG file handling:
-		JsonObject cfgFileJson = CfgFileHelper.parseCfgFileAsJson(filesPaths.get(FilesConstants.CFG_FILE_EXTENSION));
-		String refBuild = CfgFileHelper.getAssemblyVersion(cfgFileJson);
+		JsonObject cfgJson = CfgFileHelper.parseCfgFileAsJson(filesPaths.get(FilesConstants.CFG_FILE_EXTENSION));
+		String refBuild = CfgFileHelper.getAssemblyVersion(cfgJson);
 
 		// FAM file handling:
-		JsonArray famFileJson = FamFileHelper.parseFamFileAsJson(filesPaths.get(FilesConstants.FAM_FILE_EXTENSION));
-		String phenotypeValue = FamFileHelper.getPhenotypeValue(famFileJson);
+		JsonArray famJson = FamFileHelper.parseFamFileAsJson(filesPaths.get(FilesConstants.FAM_FILE_EXTENSION));
+		String phenotypeValue = FamFileHelper.getPhenotypeValue(famJson);
 
 		// VCF file handling:
 		String vcfFilePath = filesPaths.get(FilesConstants.VCF_FILE_EXTENSION);
@@ -72,23 +73,25 @@ public class Annotator implements Constants, AnnotatorConstants {
 			}
 
 			while (line != null) {
-				String[] values = line.split("\t");
+				String[] splitVcfLine = line.split("\t");
 
-				if (values.length < 5) {
+				if (splitVcfLine.length < 5) {
 					line = bufferedReader.readLine();
 					continue;
 				}
 
-				String chr = values[0].substring(3);
-				String pos = values[1];
-				String ref = values[3];
-				String alt = values[4];
+				String chr = splitVcfLine[0].substring(3);
+				String pos = splitVcfLine[1];
+				String ref = splitVcfLine[3];
+				String alt = splitVcfLine[4];
+				String[] vcfGtData = VcfFileHelper.getVcfGtData(splitVcfLine);
+				Integer[] mappedGt = VcfFileHelper.mapVcfGtData(vcfGtData);
 
 				AStorageClient aStorageClient = new AStorageClient();
 				JsonObject universalVariantJson = aStorageClient.queryUniversalVariant(refBuild, chr, pos, ref, alt);
 
 				if (universalVariantJson != null) {
-					Anfisa anfisa = new Anfisa(universalVariantJson);
+					Anfisa anfisa = new Anfisa(universalVariantJson, famJson, mappedGt);
 					JsonObject anfisaJson = anfisa.extractData();
 					writer.append(anfisaJson.toString());
 					writer.append('\n');

@@ -5,6 +5,7 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public interface Formatter {
     void formatData();
@@ -19,6 +20,10 @@ public interface Formatter {
             } else if (valueFinder instanceof Function) {
                 Function<JsonObject, Object> valueFinderFunction = (Function<JsonObject, Object>) valueFinder;
                 Object value = valueFinderFunction.apply(variant);
+                anfisaJson.put(key, value);
+            } else if (valueFinder instanceof Supplier) {
+                Supplier<Object> valueFinderSupplier = (Supplier<Object>) valueFinder;
+                Object value = valueFinderSupplier.get();
                 anfisaJson.put(key, value);
             }
         }

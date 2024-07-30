@@ -69,6 +69,7 @@ components:
       allOf:
         - $ref: '#/components/schemas/GnomADRecord'
         - $ref: '#/components/schemas/ClinVarRecord'
+        - $ref: '#/components/schemas/MiscRecord'
     GnomADRecord:
       type: object
       properties:
@@ -172,4 +173,13 @@ components:
         clinvar_acmg_guidelines:
           type: string
           example: "-"
+          nullable: true
+    MiscRecord:
+      type: object
+      properties:
+        zygosity:
+          type: array
+          items:
+            type: integer
+            example: [0, 0, 2]
           nullable: true
