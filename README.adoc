@@ -31,6 +31,8 @@ cd target
 java -jar annotator-1.0.0.jar
 ----
 
+NOTE: Annotator logs are being written in <dataDirectoryPath>/output_<currentTimeMillis>.log file.
+
 The service is only running on *localhost:8000* for now.
 
 For detailed API specification access the Swagger UI via: http://localhost:8000/swagger.

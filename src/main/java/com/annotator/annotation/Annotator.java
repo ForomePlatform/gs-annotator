@@ -49,6 +49,8 @@ public class Annotator implements Constants, AnnotatorConstants {
 			throw new FileNotFoundException(FilesConstants.VCF_FILE_NOT_FOUND);
 		}
 
+		AStorageClient aStorageClient = new AStorageClient();
+
 		String responsesPath = USER_HOME + GS_ANNOTATOR_DIRECTORY_NAME + "/responses";
 		Files.createDirectories(Paths.get(responsesPath));
 		File responseFile = new File(responsesPath
@@ -112,7 +114,6 @@ public class Annotator implements Constants, AnnotatorConstants {
 								.map(Pair::getValue)
 								.toList();
 
-				AStorageClient aStorageClient = new AStorageClient();
 				JsonObject universalVariantJson = aStorageClient.queryUniversalVariant(refBuild, chr, pos, ref, alt);
 
 				if (universalVariantJson != null) {

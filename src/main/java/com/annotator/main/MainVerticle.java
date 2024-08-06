@@ -13,8 +13,11 @@ import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.HttpURLConnection;
+import java.nio.file.Files;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -30,6 +33,15 @@ public class MainVerticle extends AbstractVerticle implements Constants {
 		try {
 			dataDirectoryPath = getDataDirectoryPath();
 			System.out.println("Data directory path: " + dataDirectoryPath);
+
+			File logFile = new File(dataDirectoryPath, "output_" + System.currentTimeMillis() + ".log");
+			if (!logFile.exists()) {
+				Files.createDirectories(logFile.getParentFile().toPath());
+				Files.createFile(logFile.getAbsoluteFile().toPath());
+			}
+
+			PrintStream printStream = new PrintStream(new FileOutputStream(logFile));
+			System.setOut(printStream);
 		} catch (Exception e) {
 			startPromise.fail(e.getMessage());
 
@@ -84,6 +96,8 @@ public class MainVerticle extends AbstractVerticle implements Constants {
 			HttpServerRequest req = context.request();
 
 			Callable<String> callable = () -> {
+				System.out.println(ANNOTATION_EXECUTOR_NAME + " started working...");
+
 				Annotator annotator = new Annotator(context);
 
 				return annotator.annotationHandler();
@@ -101,6 +115,8 @@ public class MainVerticle extends AbstractVerticle implements Constants {
 
 					Constants.errorResponse(req, HttpURLConnection.HTTP_INTERNAL_ERROR, errorMessage);
 				}
+
+				System.out.println(ANNOTATION_EXECUTOR_NAME + " finished working!");
 			});
 		});
 	}
