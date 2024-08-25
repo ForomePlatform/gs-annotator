@@ -41,7 +41,7 @@ To start the application run:
 [source,bash]
 ----
 cd target
-java -jar annotator-1.0.0.jar
+java -jar annotator-1.0.0.jar [config_json_path]
 ----
 
 NOTE: Annotator logs are being written in <dataDirectoryPath>/output_<currentTimeMillis>.log file.
