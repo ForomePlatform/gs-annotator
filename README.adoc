@@ -31,7 +31,7 @@ NOTE: These properties can be adjusted using a *config.json* file.
 [source,json]
 ----
 {
-	"dataDirectoryPath": "/home/user/ExampleAnnotator",
+    "dataDirectoryPath": "/home/user/ExampleAnnotator",
     "serverPort": 3000,
     "aStorageServerUrl": "http://localhost:8080/"
 }
