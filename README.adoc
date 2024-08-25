@@ -35,7 +35,7 @@ NOTE: Annotator logs are being written in <dataDirectoryPath>/output_<currentTim
 
 The service is only running on *localhost:8000* for now.
 
-For detailed API specification access the Swagger UI via: http://localhost:8000/swagger.
+For detailed API specification access the Swagger UI via: http://localhost:8000/api.
 
 == Annotation
 
@@ -50,4 +50,4 @@ curl -X POST -OJ 'http://localhost:8000/annotation/anfisa' -H 'accept: applicati
 
 NOTE: For now the FAM file isn't necessary and from the CFG JSON file only *"assembly": "GRCh38"* key-value pair is required.
 
-API reference: link:http://localhost:8000/swagger/#/Annotation/post_annotation_anfisa[Swagger Anfisa Annotation].
+API reference: link:http://localhost:8000/api/#/Annotation/post_annotation_anfisa[Anfisa Annotation].

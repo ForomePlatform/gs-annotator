@@ -4,7 +4,7 @@ info:
   description: API for annotating variants in your specified VCF.
   version: 1.0.0
 servers:
-  - url: http://localhost:8000/
+  - url: /
     description: Local server
 paths:
   /annotation/anfisa:
