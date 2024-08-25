@@ -7,8 +7,8 @@ import com.annotator.utils.annotation.AnnotatorHelper;
 import com.annotator.utils.astorage.AStorageClient;
 import com.annotator.utils.cfg_file.CfgFileHelper;
 import com.annotator.utils.fam_file.FamFileHelper;
-import com.annotator.utils.files.FilesConstants;
-import com.annotator.utils.files.FilesHelper;
+import com.annotator.utils.file_manager.FileManager;
+import com.annotator.utils.file_manager.FileManagerConstants;
 import com.annotator.utils.vcf_file.VcfFileHelper;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -36,21 +36,28 @@ public class Annotator implements Constants, AnnotatorConstants {
 	}
 
 	public String annotationHandler() throws Exception {
-		// Local paths of uploaded files
-		Map<String, String> filesPaths = FilesHelper.getUploadedFilesPaths(context.fileUploads());
+		// Names and local paths of uploaded files
+		FileManager fileManager = new FileManager(context.fileUploads());
 
 		// CFG file handling:
-		JsonObject cfgJson = CfgFileHelper.parseCfgFileAsJson(filesPaths.get(FilesConstants.CFG_FILE_EXTENSION));
+		String cfgFilePath = fileManager.getCfgFilePath();
+		if (cfgFilePath == null) {
+			throw new FileNotFoundException(FileManagerConstants.CFG_FILE_NOT_FOUND);
+		}
+		JsonObject cfgJson = CfgFileHelper.parseCfgFileAsJson(cfgFilePath);
 		String refBuild = CfgFileHelper.getAssemblyVersion(cfgJson);
 
 		// FAM file handling:
-		JsonArray famJson = FamFileHelper.parseFamFileAsJson(filesPaths.get(FilesConstants.FAM_FILE_EXTENSION));
-		String phenotypeValue = FamFileHelper.getPhenotypeValue(famJson);
+		String famFilePath = fileManager.getFamFilePath();
+		if (famFilePath == null) {
+			throw new FileNotFoundException(FileManagerConstants.FAM_FILE_NOT_FOUND);
+		}
+		JsonArray famJson = FamFileHelper.parseFamFileAsJson(famFilePath);
 
 		// VCF file handling:
-		String vcfFilePath = filesPaths.get(FilesConstants.VCF_FILE_EXTENSION);
+		String vcfFilePath = fileManager.getVcfFilePath();
 		if (vcfFilePath == null) {
-			throw new FileNotFoundException(FilesConstants.VCF_FILE_NOT_FOUND);
+			throw new FileNotFoundException(FileManagerConstants.VCF_FILE_NOT_FOUND);
 		}
 
 		AStorageClient aStorageClient = new AStorageClient(aStorageServerUrl);
@@ -59,7 +66,7 @@ public class Annotator implements Constants, AnnotatorConstants {
 		Files.createDirectories(Paths.get(responsesPath));
 		File responseFile = new File(responsesPath
 			+ "/"
-			+ FilesHelper.generateUniqueFileName(null, null)
+			+ FileManager.generateUniqueFileName(null, null)
 			+ "."
 			+ ANNOTATOR_RESULT_FILE_EXTENSION);
 
@@ -69,9 +76,6 @@ public class Annotator implements Constants, AnnotatorConstants {
 			BufferedReader bufferedReader = new BufferedReader(reader);
 			BufferedWriter writer = new BufferedWriter(new FileWriter(responseFile, true))
 		) {
-			writer.append(AnnotatorHelper.generateMetadataJson().toString());
-			writer.append('\n');
-
 			// Start reading the input file
 			String line = bufferedReader.readLine();
 			while (line != null && line.startsWith("##")) {
@@ -93,6 +97,10 @@ public class Annotator implements Constants, AnnotatorConstants {
 				String sampleName = famJson.getJsonObject(i).getString(WITHIN_FAMILY_ID_KEY);
 				sampleNameIndices.put(sampleName, i);
 			}
+
+			// Add metadata
+			writer.append(AnnotatorHelper.generateMetadataJson(famJson, cfgJson, fileManager.getVcfFileName()).toString());
+			writer.append('\n');
 
 			line = bufferedReader.readLine();
 

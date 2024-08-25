@@ -21,8 +21,12 @@ public interface Constants {
 	int ANNOTATION_EXECUTOR_POOL_SIZE_LIMIT = 4;
 	int EXECUTOR_TIME_LIMIT_DAYS = 1;
 
-	// URL paths
+	// URL paths:
 	String ANNOTATION_HANLDER_PATH = "/annotation";
+
+	// Annotator related:
+	String ASSEMBLY_VERSION_GRCH37 = "GRCh37";
+	String ASSEMBLY_VERSION_GRCH38 = "GRCh38";
 
 	// Success messages:
 	String SUCCESS = "success";
