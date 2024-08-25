@@ -5,18 +5,24 @@ import io.vertx.core.json.JsonObject;
 
 public interface Constants {
 	// General:
-	int HTTP_SERVER_PORT = 8000;
-	int ANNOTATION_EXECUTOR_POOL_SIZE_LIMIT = 4;
-	int EXECUTOR_TIME_LIMIT_DAYS = 1;
-	String ANNOTATION_EXECUTOR_NAME = "annotation-executor";
+	int DEFAULT_HTTP_SERVER_PORT = 8000;
 	String USER_HOME = System.getProperty("user.home");
 	String GS_ANNOTATOR_DIRECTORY_NAME = "/GSAnnotator";
-	String ASTORAGE_SERVER_PATH = "http://localhost:8080";
-	String HTTP_SERVER_START = "HTTP server started on port: " + HTTP_SERVER_PORT + "!";
+	String HTTP_SERVER_START = "HTTP server started on port: %d!";
 	String HTTP_SERVER_STOP = "HTTP server stopped.";
 
-	// Handler URL paths
-	String ANNOTATION_HANLDER_PATH = "annotation";
+	// Config related:
+	String DATA_DIRECTORY_PATH_CONFIG_KEY = "dataDirectoryPath";
+	String HTTP_SERVER_PORT_CONFIG_KEY = "serverPort";
+	String ASTORAGE_SERVER_URL_CONFIG_KEY = "aStorageServerUrl";
+
+	// Executors related:
+	String ANNOTATION_EXECUTOR_NAME = "annotation-executor";
+	int ANNOTATION_EXECUTOR_POOL_SIZE_LIMIT = 4;
+	int EXECUTOR_TIME_LIMIT_DAYS = 1;
+
+	// URL paths
+	String ANNOTATION_HANLDER_PATH = "/annotation";
 
 	// Success messages:
 	String SUCCESS = "success";
@@ -26,59 +32,50 @@ public interface Constants {
 	String HTTP_SERVER_FAIL = "Server failed to start...";
 	String INITIALIZING_DIRECTORY_ERROR = "Couldn't initialize directories...";
 	String INTERNAL_ERROR = "Internal error...";
+	String CONFIG_JSON_DOESNT_EXIST_ERROR = "Given config file doesn't exist.";
+	String CONFIG_JSON_NOT_READABLE_ERROR = "Couldn't read the given config file...";
+	String CONFIG_JSON_DECODE_ERROR = "Given config file isn't a valid JSON...";
 
 	// Helper functions:
-	static void successResponse(HttpServerRequest req, String successMsg) {
-		JsonObject successJson = new JsonObject();
-		successJson.put(SUCCESS, successMsg);
-
+	static void response(HttpServerRequest req, JsonObject response, int statusCode) {
 		if (req.response().ended()) {
 			return;
 		}
 
 		if (req.response().headWritten()) {
 			if (req.response().isChunked()) {
-				req.response().write(successJson + "\n");
+				req.response().write(response + "\n");
 			} else {
-				req.response().end(successJson + "\n");
+				req.response().end(response + "\n");
 			}
 
 			return;
 		}
 
 		req.response()
-			.putHeader("content-type", "application/json")
-			.end(successJson + "\n");
+				.setStatusCode(statusCode)
+				.putHeader("content-type", "application/json")
+				.end(response + "\n");
+	}
+
+	static void successResponse(HttpServerRequest req, String successMsg) {
+		JsonObject successJson = new JsonObject();
+		successJson.put(SUCCESS, successMsg);
+
+		response(req, successJson, 200);
 	}
 
 	static void errorResponse(HttpServerRequest req, int errorCode, String errorMsg) {
 		JsonObject errorJson = new JsonObject();
 		errorJson.put(ERROR, errorMsg);
 
-		if (req.response().ended()) {
-			return;
-		}
-
-		if (req.response().headWritten()) {
-			if (req.response().isChunked()) {
-				req.response().write(errorJson + "\n");
-			} else {
-				req.response().end(errorJson + "\n");
-			}
-
-			return;
-		}
-
-		req.response()
-			.setStatusCode(errorCode)
-			.putHeader("content-type", "application/json")
-			.end(errorJson + "\n");
+		response(req, errorJson, errorCode);
 	}
 
 	static void fileResponse(HttpServerRequest req, String data) {
 		req.response()
 			.putHeader("content-type", "application/octet-stream")
-			.putHeader("content-disposition", "attachment; filename=anfisa.jsonl") // TODO: Filename not working...
+			.putHeader("content-disposition", "attachment; filename=anfisa.jsonl")
 			.sendFile(data);
 	}
 }

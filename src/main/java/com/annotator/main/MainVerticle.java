@@ -4,76 +4,83 @@ import com.annotator.annotation.Annotator;
 import com.annotator.utils.Constants;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.WorkerExecutor;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.DecodeException;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.net.HttpURLConnection;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 public class MainVerticle extends AbstractVerticle implements Constants {
-	WorkerExecutor annotationExecutor;
+	private WorkerExecutor annotationExecutor;
+	private String aStorageServerUrl;
 
 	@Override
 	public void start(Promise<Void> startPromise) {
 		HttpServer server = vertx.createHttpServer();
 		Router router = Router.router(vertx);
 
+		JsonObject configJson;
 		String dataDirectoryPath;
+		Integer serverPort = DEFAULT_HTTP_SERVER_PORT;
 		try {
-			dataDirectoryPath = getDataDirectoryPath();
+			configJson = getConfigJson();
+
+			dataDirectoryPath = getDataDirectoryPath(configJson.getString(DATA_DIRECTORY_PATH_CONFIG_KEY));
 			System.out.println("Data directory path: " + dataDirectoryPath);
 
-			File logFile = new File(dataDirectoryPath, "output_" + System.currentTimeMillis() + ".log");
-			if (!logFile.exists()) {
-				Files.createDirectories(logFile.getParentFile().toPath());
-				Files.createFile(logFile.getAbsoluteFile().toPath());
+			createLogFile(dataDirectoryPath);
+
+			if (configJson.containsKey(HTTP_SERVER_PORT_CONFIG_KEY)) {
+				serverPort = configJson.getInteger(HTTP_SERVER_PORT_CONFIG_KEY);
 			}
 
-			PrintStream printStream = new PrintStream(new FileOutputStream(logFile));
-			System.setOut(printStream);
+			if (configJson.containsKey(ASTORAGE_SERVER_URL_CONFIG_KEY)) {
+				aStorageServerUrl = configJson.getString(ASTORAGE_SERVER_URL_CONFIG_KEY);
+			} else {
+				throw new Exception("AStorage server URL not provided...");
+			}
 		} catch (Exception e) {
 			startPromise.fail(e.getMessage());
 
 			return;
 		}
 
-		annotationExecutor = vertx.createSharedWorkerExecutor(
-			ANNOTATION_EXECUTOR_NAME,
-			ANNOTATION_EXECUTOR_POOL_SIZE_LIMIT,
-			EXECUTOR_TIME_LIMIT_DAYS,
-			TimeUnit.DAYS
-		);
+		WorkerExecutor initExecutor = vertx.createSharedWorkerExecutor("init-executor", 1, 1, TimeUnit.DAYS);
+		Callable<Boolean> callableInit = init(router, dataDirectoryPath);
 
-		setAnnotationHandler(router);
-		setStopHandler(router);
-		setSwaggerHandler(router);
+		Integer finalServerPort = serverPort;
+		initExecutor.executeBlocking(callableInit).onComplete(handler -> {
+			initExecutor.close();
 
-		server.requestHandler(router).listen(HTTP_SERVER_PORT, result -> {
-			if (result.succeeded()) {
-				if (!initializeDirectories(dataDirectoryPath)) {
-					startPromise.fail(new IOException(INITIALIZING_DIRECTORY_ERROR));
+			server.requestHandler(router).listen(finalServerPort, result -> {
+				if (result.succeeded()) {
+					if (!initializeDirectories(dataDirectoryPath)) {
+						startPromise.fail(new IOException(INITIALIZING_DIRECTORY_ERROR));
 
-					return;
+						return;
+					}
+
+					System.out.printf((HTTP_SERVER_START) + "%n", finalServerPort);
+					startPromise.complete();
+				} else {
+					System.err.println(HTTP_SERVER_FAIL);
+					result.cause().printStackTrace();
+					startPromise.fail(result.cause());
 				}
-
-				System.out.println(HTTP_SERVER_START);
-				startPromise.complete();
-			} else {
-				System.err.println(HTTP_SERVER_FAIL);
-				result.cause().printStackTrace();
-				startPromise.fail(result.cause());
-			}
+			});
 		});
 	}
 
@@ -86,19 +93,34 @@ public class MainVerticle extends AbstractVerticle implements Constants {
 		stopPromise.complete();
 	}
 
-	private void setAnnotationHandler(Router router) {
-		// Enable file uploads
-		router.route().handler(BodyHandler.create().setUploadsDirectory(
-			USER_HOME + GS_ANNOTATOR_DIRECTORY_NAME + "/uploads"
-		));
+	private Callable<Boolean> init(Router router, String dataDirectoryPath) {
+		return () -> {
+			annotationExecutor = vertx.createSharedWorkerExecutor(
+				ANNOTATION_EXECUTOR_NAME,
+				ANNOTATION_EXECUTOR_POOL_SIZE_LIMIT,
+				EXECUTOR_TIME_LIMIT_DAYS,
+				TimeUnit.DAYS
+			);
 
-		router.post('/' + ANNOTATION_HANLDER_PATH + "/anfisa" ).handler((RoutingContext context) -> {
+			setAnnotationHandler(router, dataDirectoryPath);
+			setStopHandler(router);
+			setSwaggerHandler(router);
+
+			return true;
+		};
+	}
+
+	private void setAnnotationHandler(Router router, String dataDirectoryPath) {
+		// Enable file uploads
+		router.route().handler(BodyHandler.create().setUploadsDirectory(dataDirectoryPath + "/uploads"));
+
+		router.post(ANNOTATION_HANLDER_PATH + "/anfisa" ).handler((RoutingContext context) -> {
 			HttpServerRequest req = context.request();
 
 			Callable<String> callable = () -> {
 				System.out.println(ANNOTATION_EXECUTOR_NAME + " started working...");
 
-				Annotator annotator = new Annotator(context);
+				Annotator annotator = new Annotator(context, dataDirectoryPath, aStorageServerUrl);
 
 				return annotator.annotationHandler();
 			};
@@ -148,7 +170,54 @@ public class MainVerticle extends AbstractVerticle implements Constants {
 		return true;
 	}
 
-	private String getDataDirectoryPath() {
+	private String getDataDirectoryPath(String dataDirectoryPathFromConfig) {
+		if (dataDirectoryPathFromConfig != null) {
+			return dataDirectoryPathFromConfig;
+		}
+
 		return USER_HOME + GS_ANNOTATOR_DIRECTORY_NAME;
+	}
+
+	private void createLogFile(String dataDirectoryPath) throws Exception {
+		File logFile = new File(dataDirectoryPath, "output_" + System.currentTimeMillis() + ".log");
+		if (!logFile.exists()) {
+			Files.createDirectories(logFile.getParentFile().toPath());
+			Files.createFile(logFile.getAbsoluteFile().toPath());
+		}
+
+		PrintStream printStream = new PrintStream(new FileOutputStream(logFile));
+		System.setOut(printStream);
+	}
+
+	private JsonObject getConfigJson() throws Exception {
+		List<String> args = Vertx.currentContext().processArgs();
+
+		if (args != null && !args.isEmpty()) {
+			String configPath = args.get(0);
+
+			File file = new File(configPath);
+			if (!file.exists()) {
+				throw new Exception(CONFIG_JSON_DOESNT_EXIST_ERROR);
+			}
+
+			String configAsString;
+			try (FileInputStream fileInputStream = new FileInputStream(file)) {
+				byte[] configAsBytes = fileInputStream.readAllBytes();
+				configAsString = new String(configAsBytes, StandardCharsets.UTF_8);
+			} catch (IOException e) {
+				throw new Exception(CONFIG_JSON_NOT_READABLE_ERROR);
+			}
+
+			JsonObject configAsJson;
+			try {
+				configAsJson = new JsonObject(configAsString);
+			} catch (DecodeException e) {
+				throw new Exception(CONFIG_JSON_DECODE_ERROR);
+			}
+
+			return configAsJson;
+		}
+
+		return new JsonObject();
 	}
 }

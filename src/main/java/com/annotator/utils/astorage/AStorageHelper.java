@@ -7,14 +7,15 @@ import java.net.URISyntaxException;
 
 public class AStorageHelper implements Constants {
 	public static URI createUniversalVariantQuery(
-		String refBuild,
-		String chr,
-		String pos,
-		String ref,
-		String alt
+			String serverUrl,
+			String refBuild,
+			String chr,
+			String pos,
+			String ref,
+			String alt
 	) {
 		try {
-			return new URI(ASTORAGE_SERVER_PATH + "/query/universalvariant" +
+			return new URI(serverUrl + "/query/universalvariant" +
 				"?refBuild=" + refBuild +
 				"&chr=" + chr +
 				"&pos=" + pos +

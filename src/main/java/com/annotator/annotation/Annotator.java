@@ -26,9 +26,13 @@ import static com.annotator.utils.fam_file.FamFileConstants.WITHIN_FAMILY_ID_KEY
 
 public class Annotator implements Constants, AnnotatorConstants {
 	private final RoutingContext context;
+	private final String dataDirectoryPath;
+	private final String aStorageServerUrl;
 
-	public Annotator(RoutingContext context) {
+	public Annotator(RoutingContext context, String dataDirectoryPath, String aStorageServerUrl) {
 		this.context = context;
+		this.dataDirectoryPath = dataDirectoryPath;
+		this.aStorageServerUrl = aStorageServerUrl;
 	}
 
 	public String annotationHandler() throws Exception {
@@ -49,9 +53,9 @@ public class Annotator implements Constants, AnnotatorConstants {
 			throw new FileNotFoundException(FilesConstants.VCF_FILE_NOT_FOUND);
 		}
 
-		AStorageClient aStorageClient = new AStorageClient();
+		AStorageClient aStorageClient = new AStorageClient(aStorageServerUrl);
 
-		String responsesPath = USER_HOME + GS_ANNOTATOR_DIRECTORY_NAME + "/responses";
+		String responsesPath = dataDirectoryPath + "/responses";
 		Files.createDirectories(Paths.get(responsesPath));
 		File responseFile = new File(responsesPath
 			+ "/"

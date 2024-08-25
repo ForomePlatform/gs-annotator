@@ -22,7 +22,20 @@ cd gs-annotator
 
 The JAR file will be generated inside the *target* directory as *annotator-1.0.0.jar*.
 
-On the first run the application creates a data folder in the user's home directory by default with the name *GSAnnotator*.
+- On the first run the application creates a data folder in the user's home directory with the name *GSAnnotator* by default if not specified otherwise.
+- The service is running on port *8000* by default if not specified otherwise.
+
+NOTE: These properties can be adjusted using a *config.json* file.
+
+*config.json* example:
+[source,json]
+----
+{
+	"dataDirectoryPath": "/home/user/ExampleAnnotator",
+    "serverPort": 3000,
+    "aStorageServerUrl": "http://localhost:8080/"
+}
+----
 
 To start the application run:
 [source,bash]
@@ -33,21 +46,17 @@ java -jar annotator-1.0.0.jar
 
 NOTE: Annotator logs are being written in <dataDirectoryPath>/output_<currentTimeMillis>.log file.
 
-The service is only running on *localhost:8000* for now.
-
 For detailed API specification access the Swagger UI via: http://localhost:8000/api.
 
 == Annotation
 
 To perform annotation of variants in your specified VCF:
 
-NOTE: To use the annotation service AStorage service should be running on *localhost:8080*.
+NOTE: To use the annotation service AStorage service should be running on the configured AStorage server URL.
 
 [source,bash]
 ----
 curl -X POST -OJ 'http://localhost:8000/annotation/anfisa' -H 'accept: application/jsonl' -H 'Content-Type: multipart/form-data' -F 'cfgFile=@<path to .cfg file>' -F 'famFile=@<path to .fam file>' -F 'vcfFile=@<path to .vcf file>'
 ----
-
-NOTE: For now the FAM file isn't necessary and from the CFG JSON file only *"assembly": "GRCh38"* key-value pair is required.
 
 API reference: link:http://localhost:8000/api/#/Annotation/post_annotation_anfisa[Anfisa Annotation].

@@ -11,9 +11,11 @@ import java.net.http.HttpResponse;
 
 public class AStorageClient {
     private final HttpClient client;
+    private final String serverUrl;
 
-    public AStorageClient() {
+    public AStorageClient(String serverPath) {
         client = HttpClient.newHttpClient();
+        this.serverUrl = serverPath;
     }
 
     public JsonObject queryUniversalVariant(
@@ -23,7 +25,7 @@ public class AStorageClient {
             String ref,
             String alt
     ) {
-        URI queryUri = AStorageHelper.createUniversalVariantQuery(refBuild, chr, pos, ref, alt);
+        URI queryUri = AStorageHelper.createUniversalVariantQuery(serverUrl, refBuild, chr, pos, ref, alt);
 
         if (queryUri == null) {
             return null; // TODO: Handle...
