@@ -18,8 +18,8 @@
 
 		<vertx.version>4.5.9</vertx.version>
 
-		<main.verticle>com.annotator.main.MainVerticle</main.verticle>
 		<launcher.class>io.vertx.core.Launcher</launcher.class>
+		<main.verticle>com.annotator.main.MainVerticle</main.verticle>
 	</properties>
 
 	<dependencyManagement>
@@ -44,6 +44,16 @@
 			<artifactId>vertx-web</artifactId>
 			<version>${vertx.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-to-slf4j</artifactId>
+			<version>2.23.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.broadinstitute</groupId>
+			<artifactId>picard</artifactId>
+			<version>3.2.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -53,8 +63,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>${maven-compiler-plugin.version}</version>
 				<configuration>
-					<source>16</source>
-					<target>16</target>
+					<source>18</source>
+					<target>18</target>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -67,12 +77,23 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
+							<filters>
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>META-INF/*.SF</exclude>
+										<exclude>META-INF/*.DSA</exclude>
+										<exclude>META-INF/*.RSA</exclude>
+									</excludes>
+								</filter>
+							</filters>
 							<transformers>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<manifestEntries>
 										<Main-Class>${launcher.class}</Main-Class>
 										<Main-Verticle>${main.verticle}</Main-Verticle>
+										<Multi-Release>true</Multi-Release>
 									</manifestEntries>
 								</transformer>
 								<transformer

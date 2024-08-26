@@ -8,16 +8,17 @@ import io.vertx.core.Vertx;
 import io.vertx.core.WorkerExecutor;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.net.HttpURLConnection;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -133,6 +134,8 @@ public class MainVerticle extends AbstractVerticle implements Constants {
 
 					if (result.cause().getMessage() != null) {
 						errorMessage = result.cause().getMessage();
+					} else {
+						result.cause().printStackTrace();
 					}
 
 					Constants.errorResponse(req, HttpURLConnection.HTTP_INTERNAL_ERROR, errorMessage);
@@ -195,27 +198,7 @@ public class MainVerticle extends AbstractVerticle implements Constants {
 		if (args != null && !args.isEmpty()) {
 			String configPath = args.get(0);
 
-			File file = new File(configPath);
-			if (!file.exists()) {
-				throw new Exception(CONFIG_JSON_DOESNT_EXIST_ERROR);
-			}
-
-			String configAsString;
-			try (FileInputStream fileInputStream = new FileInputStream(file)) {
-				byte[] configAsBytes = fileInputStream.readAllBytes();
-				configAsString = new String(configAsBytes, StandardCharsets.UTF_8);
-			} catch (IOException e) {
-				throw new Exception(CONFIG_JSON_NOT_READABLE_ERROR);
-			}
-
-			JsonObject configAsJson;
-			try {
-				configAsJson = new JsonObject(configAsString);
-			} catch (DecodeException e) {
-				throw new Exception(CONFIG_JSON_DECODE_ERROR);
-			}
-
-			return configAsJson;
+			return Constants.parseJsonFile(configPath);
 		}
 
 		return new JsonObject();

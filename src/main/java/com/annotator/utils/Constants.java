@@ -1,7 +1,14 @@
 package com.annotator.utils;
 
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonObject;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public interface Constants {
 	// General:
@@ -24,10 +31,6 @@ public interface Constants {
 	// URL paths:
 	String ANNOTATION_HANLDER_PATH = "/annotation";
 
-	// Annotator related:
-	String ASSEMBLY_VERSION_GRCH37 = "GRCh37";
-	String ASSEMBLY_VERSION_GRCH38 = "GRCh38";
-
 	// Success messages:
 	String SUCCESS = "success";
 
@@ -36,9 +39,9 @@ public interface Constants {
 	String HTTP_SERVER_FAIL = "Server failed to start...";
 	String INITIALIZING_DIRECTORY_ERROR = "Couldn't initialize directories...";
 	String INTERNAL_ERROR = "Internal error...";
-	String CONFIG_JSON_DOESNT_EXIST_ERROR = "Given config file doesn't exist.";
-	String CONFIG_JSON_NOT_READABLE_ERROR = "Couldn't read the given config file...";
-	String CONFIG_JSON_DECODE_ERROR = "Given config file isn't a valid JSON...";
+	String JSON_FILE_DOESNT_EXIST_ERROR = "Given file: %s, doesn't exist.";
+	String JSON_FILE_NOT_READABLE_ERROR = "Couldn't read the given file...";
+	String JSON_FILE_DECODE_ERROR = "Given file isn't a valid JSON...";
 
 	// Helper functions:
 	static void response(HttpServerRequest req, JsonObject response, int statusCode) {
@@ -81,5 +84,29 @@ public interface Constants {
 			.putHeader("content-type", "application/octet-stream")
 			.putHeader("content-disposition", "attachment; filename=anfisa.jsonl")
 			.sendFile(data);
+	}
+
+	static JsonObject parseJsonFile(String filePath) throws Exception {
+		File file = new File(filePath);
+		if (!file.exists()) {
+			throw new FileNotFoundException(String.format(JSON_FILE_DOESNT_EXIST_ERROR, filePath));
+		}
+
+		String fileAsString;
+		try (FileInputStream fileInputStream = new FileInputStream(file)) {
+			byte[] fileAsBytes = fileInputStream.readAllBytes();
+			fileAsString = new String(fileAsBytes, StandardCharsets.UTF_8);
+		} catch (IOException e) {
+			throw new Exception(JSON_FILE_NOT_READABLE_ERROR);
+		}
+
+		JsonObject fileAsJson;
+		try {
+			fileAsJson = new JsonObject(fileAsString);
+		} catch (DecodeException e) {
+			throw new Exception(JSON_FILE_DECODE_ERROR);
+		}
+
+		return fileAsJson;
 	}
 }

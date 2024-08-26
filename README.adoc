@@ -10,6 +10,10 @@ image:https://img.shields.io/badge/Vert.x-4.5.9-purple.svg[link="https://vertx.i
 * GERP
 * dbSNP
 
+=== Supported assembly versions:
+* GRCh37
+* GRCh38
+
 == Setup: Building and Running [Linux/MacOS]
 
 Clone the master branch and package the application as a JAR file:
@@ -44,15 +48,60 @@ cd target
 java -jar annotator-1.0.0.jar [config_json_path]
 ----
 
-NOTE: Annotator logs are being written in <dataDirectoryPath>/output_<currentTimeMillis>.log file.
+NOTE: Annotator logs are being written in <dataDirectoryPath>/output_<currentTimeMillis>.log file. Some of the output is printed in terminal where the program is being run.
 
 For detailed API specification access the Swagger UI via: http://localhost:8000/api.
 
 == Annotation
 
-To perform annotation of variants in your specified VCF:
+To perform annotation of variants in your specified VCF you'll need three files: input *.vcf* file, annotation configuration *.cfg* file and PLINK sample information *.fam* file. In case of performing VCF liftover additional files will be required.
 
 NOTE: To use the annotation service AStorage service should be running on the configured AStorage server URL.
+
+=== Required files:
+
+==== Annotator config .cfg file in JSON format:
+
+The configuration file supports these fields:
+
+- "assembly": Final assembly version of the given VCF file (After VCF liftover, if performed).
+- "performLiftover": Boolean field to indicate if liftover should be performed to the given VCF.
+
+NOTE: If "performLiftover" field is set to *true*, "chainFilePath" and "fastaFilePath" are mandatory. These files can be downloaded from link:https://hgdownload.soe.ucsc.edu/downloads.html[UCSC Genome Browser].
+
+NOTE: VCF liftover and all the necessary steps for it are performed using tools from link:https://broadinstitute.github.io/picard/[Picard].
+
+- "chainFilePath": Local path to an appropriate Chain file.
+- "fastaFilePath": Local path to an appropriate FASTA file.
+
+NOTE: VCF liftover requires an appropraite .dict file alongside the FASTA file. If such file can't be located it'll be automatically generated in the same directory as FASTA.
+
+*.cfg* file example if the original VCF is in *GRCh37*, and we want to liftover it to *GRCh38*:
+[source,json]
+----
+{
+    "assembly": "GRCh38",
+    "performLiftover": true,
+    "chainFilePath": "/hg19ToHg38.over.chain",
+    "fastaFilePath": "/hg38.fa"
+}
+----
+
+==== PLINK sample information .fam file:
+
+*.fam* file example:
+[source,text]
+----
+1	bgm9001a1	bgm9001u2	bgm9001u1	1	2
+1	bgm9001u1	0	0	2	1
+1	bgm9001u2	0	0	1	1
+----
+
+==== Input .vcf file:
+
+NOTE: VCF file name should be structured as <case>_<platform>_<project>.vcf to correctly generate annotation metadata.
+
+=== To run the annotation:
 
 [source,bash]
 ----

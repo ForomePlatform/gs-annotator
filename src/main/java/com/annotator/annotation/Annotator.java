@@ -5,12 +5,11 @@ import com.annotator.utils.Constants;
 import com.annotator.utils.annotation.AnnotatorConstants;
 import com.annotator.utils.annotation.AnnotatorHelper;
 import com.annotator.utils.astorage.AStorageClient;
-import com.annotator.utils.cfg_file.CfgFileHelper;
-import com.annotator.utils.fam_file.FamFileHelper;
+import com.annotator.utils.cfg_file.CfgFile;
+import com.annotator.utils.fam_file.FamFile;
 import com.annotator.utils.file_manager.FileManager;
-import com.annotator.utils.file_manager.FileManagerConstants;
+import com.annotator.utils.liftover_vcf_wrapper.LiftoverVcfWrapper;
 import com.annotator.utils.vcf_file.VcfFileHelper;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import javafx.util.Pair;
@@ -21,8 +20,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.IntStream;
-
-import static com.annotator.utils.fam_file.FamFileConstants.WITHIN_FAMILY_ID_KEY;
 
 public class Annotator implements Constants, AnnotatorConstants {
 	private final RoutingContext context;
@@ -41,23 +38,27 @@ public class Annotator implements Constants, AnnotatorConstants {
 
 		// CFG file handling:
 		String cfgFilePath = fileManager.getCfgFilePath();
-		if (cfgFilePath == null) {
-			throw new FileNotFoundException(FileManagerConstants.CFG_FILE_NOT_FOUND);
-		}
-		JsonObject cfgJson = CfgFileHelper.parseCfgFileAsJson(cfgFilePath);
-		String refBuild = CfgFileHelper.getAssemblyVersion(cfgJson);
+		CfgFile cfgFile = new CfgFile(cfgFilePath);
+		String refBuild = cfgFile.getAssemblyVersion();
 
 		// FAM file handling:
 		String famFilePath = fileManager.getFamFilePath();
-		if (famFilePath == null) {
-			throw new FileNotFoundException(FileManagerConstants.FAM_FILE_NOT_FOUND);
-		}
-		JsonArray famJson = FamFileHelper.parseFamFileAsJson(famFilePath);
+		FamFile famFile = new FamFile(famFilePath);
 
 		// VCF file handling:
 		String vcfFilePath = fileManager.getVcfFilePath();
-		if (vcfFilePath == null) {
-			throw new FileNotFoundException(FileManagerConstants.VCF_FILE_NOT_FOUND);
+
+		// LiftoverVcf step!
+		if (cfgFile.getPerformLiftover()) {
+			LiftoverVcfWrapper liftoverVcfWrapper = new LiftoverVcfWrapper(
+					cfgFile.getChainFilePath(),
+					vcfFilePath,
+					fileManager.getLiftedVcfFilePath() + ".vcf",
+					fileManager.getLiftedVcfRejectsFilePath() + ".vcf",
+					cfgFile.getFastaFilePath()
+			);
+
+			vcfFilePath = liftoverVcfWrapper.liftoverVcf();
 		}
 
 		AStorageClient aStorageClient = new AStorageClient(aStorageServerUrl);
@@ -93,13 +94,13 @@ public class Annotator implements Constants, AnnotatorConstants {
 				vcfSamples.addAll(Arrays.asList(splitVcfLine).subList(9, splitVcfLine.length));
 			}
 
-			for (int i = 0; i < famJson.size(); i++) {
-				String sampleName = famJson.getJsonObject(i).getString(WITHIN_FAMILY_ID_KEY);
-				sampleNameIndices.put(sampleName, i);
+			List<String> famFileSampleNames = famFile.getSampleNames();
+			for (int i = 0; i < famFileSampleNames.size(); i++) {
+				sampleNameIndices.put(famFileSampleNames.get(i), i);
 			}
 
 			// Add metadata
-			writer.append(AnnotatorHelper.generateMetadataJson(famJson, cfgJson, fileManager.getVcfFileName()).toString());
+			writer.append(AnnotatorHelper.generateMetadataJson(fileManager, cfgFile, famFile).toString());
 			writer.append('\n');
 
 			line = bufferedReader.readLine();
@@ -129,7 +130,7 @@ public class Annotator implements Constants, AnnotatorConstants {
 				JsonObject universalVariantJson = aStorageClient.queryUniversalVariant(refBuild, chr, pos, ref, alt);
 
 				if (universalVariantJson != null) {
-					Anfisa anfisa = new Anfisa(universalVariantJson, famJson, mappedSortedGtList);
+					Anfisa anfisa = new Anfisa(universalVariantJson, mappedSortedGtList);
 					JsonObject anfisaJson = anfisa.extractData();
 					writer.append(anfisaJson.toString());
 					writer.append('\n');

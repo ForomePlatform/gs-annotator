@@ -2,7 +2,6 @@ package com.annotator.formatter.anfisa;
 
 import com.annotator.formatter.Formatter;
 import com.annotator.utils.formatter.anfisa.AnfisaConstants;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.lang.reflect.Constructor;
@@ -16,7 +15,7 @@ public class Anfisa implements AnfisaConstants {
             "ClinVar",
             "DbNSFP",
 //            "SpliceAI" TODO: Few questions still unanswered...
-//            "GERP" TODO: hg38 -> hg19 liftover needs to be implemented...
+            "GERP",
             "Misc"
     };
 
@@ -24,10 +23,9 @@ public class Anfisa implements AnfisaConstants {
     private final Map<String, Object> preprocessedData;
     private final JsonObject anfisaJson;
 
-    public Anfisa(JsonObject variant, JsonArray famJson, List<Integer> mappedGt) {
+    public Anfisa(JsonObject variant, List<Integer> mappedGt) {
         this.variant = variant;
         this.preprocessedData = new HashMap<>();
-        this.preprocessedData.put(FAM_JSON_PREPROCESSED_DATA_MAP_KEY, famJson);
         this.preprocessedData.put(MAPPED_GT_PREPROCESSED_DATA_MAP_KEY, mappedGt);
         this.anfisaJson = new JsonObject();
     }
