@@ -1,5 +1,6 @@
 package com.annotator.formatter;
 
+import com.annotator.utils.variant.Variant;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -10,15 +11,15 @@ import java.util.function.Supplier;
 public interface Formatter {
     void formatData();
 
-    static void formatData(Map<String, Object> anfisaToAStorageMap, JsonObject anfisaJson, JsonObject variant) {
+    static void formatData(Map<String, Object> anfisaToAStorageMap, JsonObject anfisaJson, Variant variant) {
         for (String key : anfisaToAStorageMap.keySet()) {
             Object valueFinder = anfisaToAStorageMap.get(key);
 
             if (valueFinder instanceof String[] aStorageKeyArray) {
-                String value = Formatter.extractValueFromAStorage(variant, aStorageKeyArray, 0);
+                String value = Formatter.extractValueFromAStorage(variant.getVariantJson(), aStorageKeyArray, 0);
                 anfisaJson.put(key, value);
             } else if (valueFinder instanceof Function) {
-                Function<JsonObject, Object> valueFinderFunction = (Function<JsonObject, Object>) valueFinder;
+                Function<Variant, Object> valueFinderFunction = (Function<Variant, Object>) valueFinder;
                 Object value = valueFinderFunction.apply(variant);
                 anfisaJson.put(key, value);
             } else if (valueFinder instanceof Supplier) {

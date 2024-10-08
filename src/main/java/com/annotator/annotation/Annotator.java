@@ -9,6 +9,7 @@ import com.annotator.utils.cfg_file.CfgFile;
 import com.annotator.utils.fam_file.FamFile;
 import com.annotator.utils.file_manager.FileManager;
 import com.annotator.utils.liftover_vcf_wrapper.LiftoverVcfWrapper;
+import com.annotator.utils.variant.Variant;
 import com.annotator.utils.vcf_file.VcfFileHelper;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -130,7 +131,8 @@ public class Annotator implements Constants, AnnotatorConstants {
 				JsonObject universalVariantJson = aStorageClient.queryUniversalVariant(refBuild, chr, pos, ref, alt);
 
 				if (universalVariantJson != null) {
-					Anfisa anfisa = new Anfisa(universalVariantJson, mappedSortedGtList);
+					Variant aStorageVariant = new Variant(chr, pos, ref, alt, universalVariantJson);
+					Anfisa anfisa = new Anfisa(aStorageVariant, mappedSortedGtList);
 					JsonObject anfisaJson = anfisa.extractData();
 					writer.append(anfisaJson.toString());
 					writer.append('\n');

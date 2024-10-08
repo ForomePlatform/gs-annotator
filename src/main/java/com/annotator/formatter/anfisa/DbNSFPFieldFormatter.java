@@ -1,6 +1,7 @@
 package com.annotator.formatter.anfisa;
 
 import com.annotator.formatter.Formatter;
+import com.annotator.utils.variant.Variant;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -11,11 +12,11 @@ import java.util.function.Function;
 @SuppressWarnings("unused")
 public class DbNSFPFieldFormatter implements Formatter {
     private final JsonObject anfisaJson;
-    private final JsonObject variant;
+    private final Variant variant;
     private final Map<String, Object> aStorageDbNSFPKeyMap;
     private final Map<String, Object> preprocessedData;
 
-    public DbNSFPFieldFormatter(JsonObject variant, Map<String, Object> preprocessedData, JsonObject anfisaJson) {
+    public DbNSFPFieldFormatter(Variant variant, Map<String, Object> preprocessedData, JsonObject anfisaJson) {
         this.variant = variant;
         this.preprocessedData = preprocessedData;
         this.anfisaJson = anfisaJson;
@@ -24,7 +25,7 @@ public class DbNSFPFieldFormatter implements Formatter {
     }
 
     private void preprocessData() {
-        JsonArray dbNSFPArray = variant.getJsonArray("DbNSFP");
+        JsonArray dbNSFPArray = variant.getVariantJson().getJsonArray("DbNSFP");
         if (dbNSFPArray.isEmpty()) {
             return;
         }
@@ -50,8 +51,8 @@ public class DbNSFPFieldFormatter implements Formatter {
 
     private Map<String, Object> getAStorageDbNSFPKeyMap() {
         return new HashMap<>() {{
-            put("transcripts", (Function<JsonObject, JsonArray>) (JsonObject variant) -> {
-                JsonArray dbNSFPArray = variant.getJsonArray("DbNSFP");
+            put("transcripts", (Function<Variant, JsonArray>) (Variant variant) -> {
+                JsonArray dbNSFPArray = variant.getVariantJson().getJsonArray("DbNSFP");
                 if (dbNSFPArray.isEmpty()) {
                     return null;
                 }

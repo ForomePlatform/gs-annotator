@@ -1,6 +1,7 @@
 package com.annotator.formatter.anfisa;
 
 import com.annotator.formatter.Formatter;
+import com.annotator.utils.variant.Variant;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -8,7 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class ClinVarFieldFormatter implements Formatter {
@@ -35,11 +36,11 @@ public class ClinVarFieldFormatter implements Formatter {
         put("no classification for the individual variant", "none");
     }};
     private final JsonObject anfisaJson;
-    private final JsonObject variant;
+    private final Variant variant;
     private final Map<String, Object> aStorageClinVarKeyMap;
     private final Map<String, Object> preprocessedData;
 
-    public ClinVarFieldFormatter(JsonObject variant, Map<String, Object> preprocessedData, JsonObject anfisaJson) {
+    public ClinVarFieldFormatter(Variant variant, Map<String, Object> preprocessedData, JsonObject anfisaJson) {
         this.variant = variant;
         this.preprocessedData = preprocessedData;
         this.anfisaJson = anfisaJson;
@@ -48,7 +49,9 @@ public class ClinVarFieldFormatter implements Formatter {
     }
 
     private void preprocessData() {
-        JsonArray clinVarArray = variant.getJsonArray("ClinVar");
+        JsonArray clinVarArray = variant.getVariantJson().getJsonArray("ClinVar");
+        preprocessedData.put("clinVarArray", clinVarArray);
+
         if (clinVarArray.isEmpty()) {
             return;
         }
@@ -83,8 +86,8 @@ public class ClinVarFieldFormatter implements Formatter {
 
     private Map<String, Object> getAStorageClinVarKeyMap() {
         return new HashMap<>() {{
-            put("clinvar_submitters", (Function<JsonObject, JsonArray>) (JsonObject variant) -> {
-                JsonArray clinVarArray = variant.getJsonArray("ClinVar");
+            put("clinvar_submitters", (Supplier<JsonArray>) () -> {
+                JsonArray clinVarArray = (JsonArray) preprocessedData.get("clinVarArray");
                 if (clinVarArray.isEmpty()) {
                     return null;
                 }
@@ -94,8 +97,8 @@ public class ClinVarFieldFormatter implements Formatter {
 
                 return new JsonArray(significances.stream().map((Object significanceEntry) -> ((JsonObject) significanceEntry).getJsonObject("Submitter")).toList());
             });
-            put("clinvar_benign", (Function<JsonObject, Boolean>) (JsonObject variant) -> {
-                JsonArray clinVarArray = variant.getJsonArray("ClinVar");
+            put("clinvar_benign", (Supplier<Boolean>) () -> {
+                JsonArray clinVarArray = (JsonArray) preprocessedData.get("clinVarArray");
                 if (clinVarArray.isEmpty()) {
                     return null;
                 }
@@ -105,8 +108,8 @@ public class ClinVarFieldFormatter implements Formatter {
 
                 return BENIGN_SIGNIFICANCES.contains(clinicalSignificance);
             });
-            put("clinvar_significance", (Function<JsonObject, String>) (JsonObject variant) -> {
-                JsonArray clinVarArray = variant.getJsonArray("ClinVar");
+            put("clinvar_significance", (Supplier<String>) () -> {
+                JsonArray clinVarArray = (JsonArray) preprocessedData.get("clinVarArray");
                 if (clinVarArray.isEmpty()) {
                     return null;
                 }
@@ -114,9 +117,9 @@ public class ClinVarFieldFormatter implements Formatter {
                 JsonObject clinVarObject = clinVarArray.getJsonObject(0);
                 return clinVarObject.getString("ClinicalSignificance");
             });
-            put("clinvar_trusted_significance", (Function<JsonObject, JsonArray>) (JsonObject variant) ->
+            put("clinvar_trusted_significance", (Supplier<JsonArray>) () ->
                     (JsonArray) preprocessedData.get("clinVarTrustedSignificance"));
-            put("clinvar_trusted_simplified", (Function<JsonObject, Integer>) (JsonObject variant) -> {
+            put("clinvar_trusted_simplified", (Supplier<Integer>) () -> {
                 JsonArray trustedSignificance = (JsonArray) preprocessedData.get("clinVarTrustedSignificance");
                 if (trustedSignificance == null) {
                     return null;
@@ -124,8 +127,8 @@ public class ClinVarFieldFormatter implements Formatter {
 
                 return getSimplifiedSignificanceCategorization(trustedSignificance);
             });
-            put("clinvar_stars", (Function<JsonObject, String>) (JsonObject variant) -> {
-                JsonArray clinVarArray = variant.getJsonArray("ClinVar");
+            put("clinvar_stars", (Supplier<String>) () -> {
+                JsonArray clinVarArray = (JsonArray) preprocessedData.get("clinVarArray");
                 if (clinVarArray.isEmpty()) {
                     return null;
                 }
@@ -135,8 +138,8 @@ public class ClinVarFieldFormatter implements Formatter {
 
                 return REVIEW_STATUS_TO_STARS.get(reviewStatus);
             });
-            put("number_of_clinvar_submitters", (Function<JsonObject, Integer>) (JsonObject variant) -> {
-                JsonArray clinVarArray = variant.getJsonArray("ClinVar");
+            put("number_of_clinvar_submitters", (Supplier<Integer>) () -> {
+                JsonArray clinVarArray = (JsonArray) preprocessedData.get("clinVarArray");
                 if (clinVarArray.isEmpty()) {
                     return null;
                 }
@@ -145,8 +148,8 @@ public class ClinVarFieldFormatter implements Formatter {
 
                 return clinVarObject.getJsonArray("Significances").size();
             });
-            put("clinvar_review_status", (Function<JsonObject, String>) (JsonObject variant) -> {
-                JsonArray clinVarArray = variant.getJsonArray("ClinVar");
+            put("clinvar_review_status", (Supplier<String>) () -> {
+                JsonArray clinVarArray = (JsonArray) preprocessedData.get("clinVarArray");
                 if (clinVarArray.isEmpty()) {
                     return null;
                 }
@@ -155,8 +158,8 @@ public class ClinVarFieldFormatter implements Formatter {
 
                 return clinVarObject.getString("ReviewStatus");
             });
-            put("clinvar_criteria_provided", (Function<JsonObject, Boolean>) (JsonObject variant) -> {
-                JsonArray clinVarArray = variant.getJsonArray("ClinVar");
+            put("clinvar_criteria_provided", (Supplier<Boolean>) () -> {
+                JsonArray clinVarArray = (JsonArray) preprocessedData.get("clinVarArray");
                 if (clinVarArray.isEmpty()) {
                     return null;
                 }
@@ -165,8 +168,8 @@ public class ClinVarFieldFormatter implements Formatter {
 
                 return clinVarObject.getString("ReviewStatus").contains(REVIEW_STATUS_CRITERIA_PROVIDED);
             });
-            put("clinvar_conflicts", (Function<JsonObject, Boolean>) (JsonObject variant) -> {
-                JsonArray clinVarArray = variant.getJsonArray("ClinVar");
+            put("clinvar_conflicts", (Supplier<Boolean>) () -> {
+                JsonArray clinVarArray = (JsonArray) preprocessedData.get("clinVarArray");
                 if (clinVarArray.isEmpty()) {
                     return null;
                 }
@@ -175,8 +178,8 @@ public class ClinVarFieldFormatter implements Formatter {
 
                 return !clinVarObject.getString("ReviewStatus").contains(REVIEW_STATUS_NO_CONFLICTS);
             });
-            put("clinvar_acmg_guidelines", (Function<JsonObject, String>) (JsonObject variant) -> {
-                JsonArray clinVarArray = variant.getJsonArray("ClinVar");
+            put("clinvar_acmg_guidelines", (Supplier<String>) () -> {
+                JsonArray clinVarArray = (JsonArray) preprocessedData.get("clinVarArray");
                 if (clinVarArray.isEmpty()) {
                     return null;
                 }

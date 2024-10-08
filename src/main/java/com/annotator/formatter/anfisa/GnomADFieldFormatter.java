@@ -1,6 +1,7 @@
 package com.annotator.formatter.anfisa;
 
 import com.annotator.formatter.Formatter;
+import com.annotator.utils.variant.Variant;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -8,17 +9,17 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class GnomADFieldFormatter implements Formatter {
     public static final List<String> INBREAD_POPULATION_KEYS = List.of(new String[]{"asj", "fin"});
     private final Map<String, Object> preprocessedData;
     private final JsonObject anfisaJson;
-    private final JsonObject variant;
+    private final Variant variant;
     private final Map<String, Object> aStorageGnomADKeyMap;
 
-    public GnomADFieldFormatter(JsonObject variant, Map<String, Object> preprocessedData, JsonObject anfisaJson) {
+    public GnomADFieldFormatter(Variant variant, Map<String, Object> preprocessedData, JsonObject anfisaJson) {
         this.variant = variant;
         this.preprocessedData = preprocessedData;
         this.anfisaJson = anfisaJson;
@@ -27,7 +28,7 @@ public class GnomADFieldFormatter implements Formatter {
     }
 
     private void preprocessData() {
-        JsonArray gnomADArray = variant.getJsonArray("GnomAD");
+        JsonArray gnomADArray = variant.getVariantJson().getJsonArray("GnomAD");
         preprocessedData.put("gnomADArray", gnomADArray);
 
         Map<String, Integer> populationAFMap = new HashMap<>();
@@ -65,7 +66,7 @@ public class GnomADFieldFormatter implements Formatter {
 
     private Map<String, Object> getAStorageGnomADKeyMap() {
         return new HashMap<>() {{
-            put("gnomad_af", (Function<JsonObject, Integer>) (JsonObject variant) -> {
+            put("gnomad_af", (Supplier<Integer>) () -> {
                 JsonArray gnomADArray = (JsonArray) preprocessedData.get("gnomADArray");
                 if (gnomADArray.isEmpty()) {
                     return null;
@@ -85,7 +86,7 @@ public class GnomADFieldFormatter implements Formatter {
 
                 return alleleCount / alleleNumber;
             });
-            put("gnomad_af_exomes", (Function<JsonObject, String>) (JsonObject variant) -> {
+            put("gnomad_af_exomes", (Supplier<String>) () -> {
                 JsonArray gnomADArray = (JsonArray) preprocessedData.get("gnomADArray");
                 for (Object gnomADVariant : gnomADArray) {
                     if (((JsonObject) gnomADVariant).getString("SOURCE").equals("e")) {
@@ -95,7 +96,7 @@ public class GnomADFieldFormatter implements Formatter {
 
                 return null;
             });
-            put("gnomad_af_genomes", (Function<JsonObject, String>) (JsonObject variant) -> {
+            put("gnomad_af_genomes", (Supplier<String>) () -> {
                 JsonArray gnomADArray = (JsonArray) preprocessedData.get("gnomADArray");
                 for (Object gnomADVariant : gnomADArray) {
                     if (((JsonObject) gnomADVariant).getString("SOURCE").equals("g")) {
@@ -105,7 +106,7 @@ public class GnomADFieldFormatter implements Formatter {
 
                 return null;
             });
-            put("gnomad_popmax", (Function<JsonObject, String>) (JsonObject variant) -> {
+            put("gnomad_popmax", (Supplier<String>) () -> {
                 Map<String, Integer> populationAFMap = (Map<String, Integer>) preprocessedData.get("populationAFMap");
                 Map.Entry<String, Integer> maxEntry = null;
 
@@ -121,9 +122,9 @@ public class GnomADFieldFormatter implements Formatter {
 
                 return maxEntry.getKey();
             });
-            put("gnomad_popmax_af", (Function<JsonObject, Integer>) (JsonObject variant) -> {
-                Function<JsonObject, String> getPopMax = (Function<JsonObject, String>) aStorageGnomADKeyMap.get("gnomad_popmax");
-                String popMax = anfisaJson.containsKey("gnomad_popmax") ? anfisaJson.getString("gnomad_popmax") : getPopMax.apply(variant);
+            put("gnomad_popmax_af", (Supplier<Integer>) () -> {
+                Supplier<String> getPopMax = (Supplier<String>) aStorageGnomADKeyMap.get("gnomad_popmax");
+                String popMax = anfisaJson.containsKey("gnomad_popmax") ? anfisaJson.getString("gnomad_popmax") : getPopMax.get();
                 JsonArray gnomADArray = (JsonArray) preprocessedData.get("gnomADArray");
 
                 if (gnomADArray.isEmpty()) {
@@ -144,9 +145,9 @@ public class GnomADFieldFormatter implements Formatter {
 
                 return alleleCount / alleleNumber;
             });
-            put("gnomad_popmax_an", (Function<JsonObject, Integer>) (JsonObject variant) -> {
-                Function<JsonObject, String> getPopMax = (Function<JsonObject, String>) aStorageGnomADKeyMap.get("gnomad_popmax");
-                String popMax = anfisaJson.containsKey("gnomad_popmax") ? anfisaJson.getString("gnomad_popmax") : getPopMax.apply(variant);
+            put("gnomad_popmax_an", (Supplier<Integer>) () -> {
+                Supplier<String> getPopMax = (Supplier<String>) aStorageGnomADKeyMap.get("gnomad_popmax");
+                String popMax = anfisaJson.containsKey("gnomad_popmax") ? anfisaJson.getString("gnomad_popmax") : getPopMax.get();
                 JsonArray gnomADArray = (JsonArray) preprocessedData.get("gnomADArray");
 
                 if (gnomADArray.isEmpty()) {
@@ -161,7 +162,7 @@ public class GnomADFieldFormatter implements Formatter {
 
                 return alleleNumber;
             });
-            put("gnomad_popmax_outbred", (Function<JsonObject, String>) (JsonObject variant) -> {
+            put("gnomad_popmax_outbred", (Supplier<String>) () -> {
                 Map<String, Integer> populationAFMap = (Map<String, Integer>) preprocessedData.get("populationAFMap");
                 Map.Entry<String, Integer> maxEntry = null;
                 for (Map.Entry<String, Integer> entry : populationAFMap.entrySet()) {
@@ -178,9 +179,9 @@ public class GnomADFieldFormatter implements Formatter {
 
                 return maxEntry.getKey();
             });
-            put("gnomad_popmax_af_outbred", (Function<JsonObject, Integer>) (JsonObject variant) -> {
-                Function<JsonObject, String> getPopMax = (Function<JsonObject, String>) aStorageGnomADKeyMap.get("gnomad_popmax_outbred");
-                String popMax = anfisaJson.containsKey("gnomad_popmax_outbred") ? anfisaJson.getString("gnomad_popmax_outbred") : getPopMax.apply(variant);
+            put("gnomad_popmax_af_outbred", (Supplier<Integer>) () -> {
+                Supplier<String> getPopMax = (Supplier<String>) aStorageGnomADKeyMap.get("gnomad_popmax_outbred");
+                String popMax = anfisaJson.containsKey("gnomad_popmax_outbred") ? anfisaJson.getString("gnomad_popmax_outbred") : getPopMax.get();
                 JsonArray gnomADArray = (JsonArray) preprocessedData.get("gnomADArray");
 
                 if (gnomADArray.isEmpty()) {
@@ -201,9 +202,9 @@ public class GnomADFieldFormatter implements Formatter {
 
                 return alleleCount / alleleNumber;
             });
-            put("gnomad_popmax_an_outbred", (Function<JsonObject, Integer>) (JsonObject variant) -> {
-                Function<JsonObject, String> getPopMax = (Function<JsonObject, String>) aStorageGnomADKeyMap.get("gnomad_popmax_outbred");
-                String popMax = anfisaJson.containsKey("gnomad_popmax_outbred") ? anfisaJson.getString("gnomad_popmax_outbred") : getPopMax.apply(variant);
+            put("gnomad_popmax_an_outbred", (Supplier<Integer>) () -> {
+                Supplier<String> getPopMax = (Supplier<String>) aStorageGnomADKeyMap.get("gnomad_popmax_outbred");
+                String popMax = anfisaJson.containsKey("gnomad_popmax_outbred") ? anfisaJson.getString("gnomad_popmax_outbred") : getPopMax.get();
                 JsonArray gnomADArray = (JsonArray) preprocessedData.get("gnomADArray");
 
                 if (gnomADArray.isEmpty()) {
@@ -218,7 +219,7 @@ public class GnomADFieldFormatter implements Formatter {
 
                 return alleleNumber;
             });
-            put("gnomad_hom", (Function<JsonObject, Integer>) (JsonObject variant) -> {
+            put("gnomad_hom", (Supplier<Integer>) () -> {
                 JsonArray gnomADArray = (JsonArray) preprocessedData.get("gnomADArray");
 
                 if (gnomADArray.isEmpty()) {
@@ -233,7 +234,7 @@ public class GnomADFieldFormatter implements Formatter {
 
                 return nhomalt;
             });
-            put("gnomad_hem", (Function<JsonObject, Integer>) (JsonObject variant) -> {
+            put("gnomad_hem", (Supplier<Integer>) () -> {
                 JsonArray gnomADArray = (JsonArray) preprocessedData.get("gnomADArray");
 
                 if (gnomADArray.isEmpty()) {

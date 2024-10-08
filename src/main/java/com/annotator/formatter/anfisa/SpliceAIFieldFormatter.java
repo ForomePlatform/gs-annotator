@@ -1,21 +1,22 @@
 package com.annotator.formatter.anfisa;
 
 import com.annotator.formatter.Formatter;
+import com.annotator.utils.variant.Variant;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class SpliceAIFieldFormatter implements Formatter {
     private final JsonObject anfisaJson;
-    private final JsonObject variant;
+    private final Variant variant;
     private final Map<String, Object> aStorageSpliceAIKeyMap;
     private final Map<String, Object> preprocessedData;
 
-    public SpliceAIFieldFormatter(JsonObject variant, Map<String, Object> preprocessedData, JsonObject anfisaJson) {
+    public SpliceAIFieldFormatter(Variant variant, Map<String, Object> preprocessedData, JsonObject anfisaJson) {
         this.variant = variant;
         this.preprocessedData = preprocessedData;
         this.anfisaJson = anfisaJson;
@@ -36,7 +37,7 @@ public class SpliceAIFieldFormatter implements Formatter {
     }
 
     private void preprocessData() {
-        JsonArray spliceAIArray = variant.getJsonArray("SpliceAI");
+        JsonArray spliceAIArray = variant.getVariantJson().getJsonArray("SpliceAI");
         if (spliceAIArray.isEmpty()) {
             return;
         }
@@ -49,7 +50,7 @@ public class SpliceAIFieldFormatter implements Formatter {
 
     private Map<String, Object> getAStorageSpliceAIKeyMap() {
         return new HashMap<>() {{
-            put("splice_altering", (Function<JsonObject, String>) (JsonObject variant) -> {
+            put("splice_altering", (Supplier<String>) () -> {
                 Float dsMax = (Float) preprocessedData.get("spliceAIDsMax");
                 if (dsMax == null) {
                     return null;
@@ -57,8 +58,7 @@ public class SpliceAIFieldFormatter implements Formatter {
 
                 return getSpliceAlteringCategorization(dsMax);
             });
-            put("splice_ai_dsmax", (Function<JsonObject, Float>) (JsonObject variant) ->
-                    (Float) preprocessedData.get("spliceAIDsMax"));
+            put("splice_ai_dsmax", (Supplier<Float>) () -> (Float) preprocessedData.get("spliceAIDsMax"));
         }};
     }
 
