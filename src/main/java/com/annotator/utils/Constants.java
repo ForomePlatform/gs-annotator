@@ -31,6 +31,10 @@ public interface Constants {
 	// URL paths:
 	String ANNOTATION_HANLDER_PATH = "/annotation";
 
+	// Variant related:
+	// ToDo: Include all cases
+   	String[] NORMALIZED_ALTS = {"A", "T", "G", "C", "U"};
+
 	// Success messages:
 	String SUCCESS = "success";
 
