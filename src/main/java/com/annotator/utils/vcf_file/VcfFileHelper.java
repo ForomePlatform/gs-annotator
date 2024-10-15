@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class VcfFileHelper {
+public class VcfFileHelper implements VcfFileConstants {
     public static List<String> getVcfGtData(String[] splitVcfLine) {
         if (!(splitVcfLine.length > 8)) {
             return null;
@@ -54,5 +54,18 @@ public class VcfFileHelper {
         }
 
         return parsedVcfGtData;
+    }
+
+    // Gets the number of samples in a VCF entry
+    public static Integer getNumberOfSamples(String[] splitVcfLine) {
+        // Get INFO fields
+        String infoFields = splitVcfLine[7];
+        int pos = infoFields.indexOf("NS");
+        if (pos == -1) {
+            System.out.println(NS_NOT_FOUND);
+            return null;
+        }
+
+        return Integer.parseInt("" + infoFields.charAt(pos + 2));
     }
 }

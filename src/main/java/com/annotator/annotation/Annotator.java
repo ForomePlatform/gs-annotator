@@ -157,7 +157,18 @@ public class Annotator implements Constants, AnnotatorConstants {
                     JsonObject universalVariantJson = aStorageClient.queryUniversalVariant(refBuild, chr, normalizedPos, normalizedRef, normalizedAlt);
 
                     if (universalVariantJson != null) {
-                        Variant aStorageVariant = new Variant(chr, normalizedPos, normalizedRef, normalizedAlt, universalVariantJson, alts.length > 1, normalizedVariant != null);
+                        Integer sampleCount = VcfFileHelper.getNumberOfSamples(splitVcfLine);
+
+                        Variant aStorageVariant = new Variant(
+                                chr,
+                                normalizedPos,
+                                normalizedRef,
+                                normalizedAlt,
+                                universalVariantJson,
+                                alts.length > 1,
+                                normalizedVariant != null,
+                                sampleCount
+                        );
                         Anfisa anfisa = new Anfisa(aStorageVariant, mappedSortedGtList);
                         JsonObject anfisaJson = anfisa.extractData();
 
