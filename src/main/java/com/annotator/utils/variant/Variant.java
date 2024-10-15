@@ -14,14 +14,14 @@ public class Variant {
     private final int startPos;
     private final int endPos;
 
-    private boolean multiallelic;
-    private boolean altered;
+    private final boolean multiallelic;
+    private final boolean altered;
 
     private final String color;
     private final List<String> genes;
     private final String label;
 
-    public Variant(String chr, String pos, String ref, String alt, JsonObject variantJson) {
+    public Variant(String chr, String pos, String ref, String alt, JsonObject variantJson, boolean multiallelic, boolean altered) {
         this.chr = chr;
         this.ref = ref;
         this.alt = alt;
@@ -30,8 +30,8 @@ public class Variant {
         this.startPos = Integer.parseInt(pos);
         this.endPos = startPos + ref.length() - 1;
 
-        this.multiallelic = false;
-        this.altered = false;
+        this.multiallelic = multiallelic;
+        this.altered = altered;
 
         this.color = "grey"; // TODO: Implement...
         this.genes = new ArrayList<>(); // TODO: Implement...
@@ -66,16 +66,8 @@ public class Variant {
         return this.multiallelic;
     }
 
-    public void setMultiallelic(boolean multiallelic) {
-        this.multiallelic = multiallelic;
-    }
-
     public boolean getAltered() {
         return this.altered;
-    }
-
-    public void setAltered(boolean altered) {
-        this.altered = altered;
     }
 
     public String getColor() {

@@ -135,29 +135,29 @@ public class Annotator implements Constants, AnnotatorConstants {
                     String normalizedAlt = alt;
                     String normalizedPos = pos;
 
-                    // Normalization step:
-                    JsonObject currNormalizedVariant = aStorageClient.normalizeVariant(refBuild, chr, pos, ref, alt);
-                    try {
-                        if (!(currNormalizedVariant.getString("ref").equals(ref)
-                                && currNormalizedVariant.getString("alt").equals(alt)
-                                && currNormalizedVariant.getString("pos").equals(pos))) {
-                            normalizedVariant = currNormalizedVariant;
-                            normalizedRef = normalizedVariant.getString("ref");
-                            normalizedAlt = normalizedVariant.getString("alt");
-                            normalizedPos = normalizedVariant.getString("pos");
+                    // Don't call normalization when we have SNPs
+                    if (!(ref.length() == 1 && alt.length() == 1)) {
+                        // Normalization step:
+                        JsonObject currNormalizedVariant = aStorageClient.normalizeVariant(refBuild, chr, pos, ref, alt);
+                        try {
+                            if (!(currNormalizedVariant.getString("ref").equals(ref)
+                                    && currNormalizedVariant.getString("alt").equals(alt)
+                                    && currNormalizedVariant.getString("pos").equals(pos))) {
+                                normalizedVariant = currNormalizedVariant;
+                                normalizedRef = normalizedVariant.getString("ref");
+                                normalizedAlt = normalizedVariant.getString("alt");
+                                normalizedPos = normalizedVariant.getString("pos");
+                            }
+                        } catch (Exception e) {
+                            // TODO: handle normalization error properly
+                            throw new Exception(ANNOTATOR_NORMALIZATION_ERROR);
                         }
-                    } catch (Exception e) {
-                        // TODO: handle normalization error properly
-                        throw new Exception(ANNOTATOR_NORMALIZATION_ERROR);
                     }
 
                     JsonObject universalVariantJson = aStorageClient.queryUniversalVariant(refBuild, chr, normalizedPos, normalizedRef, normalizedAlt);
 
                     if (universalVariantJson != null) {
-                        Variant aStorageVariant = new Variant(chr, normalizedPos, normalizedRef, normalizedAlt, universalVariantJson);
-                        aStorageVariant.setMultiallelic(alts.length > 1);
-                        aStorageVariant.setAltered(normalizedVariant != null);
-
+                        Variant aStorageVariant = new Variant(chr, normalizedPos, normalizedRef, normalizedAlt, universalVariantJson, alts.length > 1, normalizedVariant != null);
                         Anfisa anfisa = new Anfisa(aStorageVariant, mappedSortedGtList);
                         JsonObject anfisaJson = anfisa.extractData();
 
