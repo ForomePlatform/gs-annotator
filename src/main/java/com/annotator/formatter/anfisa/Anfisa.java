@@ -24,17 +24,13 @@ public class Anfisa implements AnfisaConstants {
     private final Map<String, Object> preprocessedData;
     private final JsonObject anfisaJson;
 
-    public Anfisa(Variant variant, List<Integer> mappedGt, boolean multiallelic, boolean altered) {
+    public Anfisa(Variant variant, List<Integer> mappedGt) {
         this.variant = variant;
 
         this.preprocessedData = new HashMap<>();
         this.preprocessedData.put(MAPPED_GT_PREPROCESSED_DATA_MAP_KEY, mappedGt);
-        this.preprocessedData.put(MULTIALLELIC_PREPROCESSED_DATA_MAP_KEY, multiallelic);
-        this.preprocessedData.put(ALTERED_VCF_PREPROCESSED_DATA_MAP_KEY, altered);
 
         this.anfisaJson = new JsonObject();
-        this.anfisaJson.put("multiallelic", multiallelic);
-        this.anfisaJson.put("altered_vcf", altered);
     }
 
     public JsonObject extractData() throws Exception {

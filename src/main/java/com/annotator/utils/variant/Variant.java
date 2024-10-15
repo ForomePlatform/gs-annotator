@@ -13,6 +13,10 @@ public class Variant {
 
     private final int startPos;
     private final int endPos;
+
+    private boolean multiallelic;
+    private boolean altered;
+
     private final String color;
     private final List<String> genes;
     private final String label;
@@ -25,6 +29,10 @@ public class Variant {
 
         this.startPos = Integer.parseInt(pos);
         this.endPos = startPos + ref.length() - 1;
+
+        this.multiallelic = false;
+        this.altered = false;
+
         this.color = "grey"; // TODO: Implement...
         this.genes = new ArrayList<>(); // TODO: Implement...
         this.label = constructLabel();
@@ -52,6 +60,22 @@ public class Variant {
 
     public int getEndPos() {
         return this.endPos;
+    }
+
+    public boolean getMultiallelic() {
+        return this.multiallelic;
+    }
+
+    public void setMultiallelic(boolean multiallelic) {
+        this.multiallelic = multiallelic;
+    }
+
+    public boolean getAltered() {
+        return this.altered;
+    }
+
+    public void setAltered(boolean altered) {
+        this.altered = altered;
     }
 
     public String getColor() {
