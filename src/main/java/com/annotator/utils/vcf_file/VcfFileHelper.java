@@ -59,13 +59,14 @@ public class VcfFileHelper implements VcfFileConstants {
     // Gets the number of samples in a VCF entry
     public static Integer getNumberOfSamples(String[] splitVcfLine) {
         // Get INFO fields
-        String infoFields = splitVcfLine[7];
-        int pos = infoFields.indexOf("NS");
-        if (pos == -1) {
-            System.out.println(NS_NOT_FOUND);
-            return null;
+        String[] splitInfoField = splitVcfLine[7].split(INFO_FIELD_DELIMITER);
+
+        for (String infoValue : splitInfoField) {
+            if (infoValue.contains(NS_PREFIX) && infoValue.length() > 3) {
+                return Integer.parseInt(infoValue.substring(3));
+            }
         }
 
-        return Integer.parseInt("" + infoFields.charAt(pos + 2));
+        return null;
     }
 }
