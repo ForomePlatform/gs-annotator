@@ -13,11 +13,26 @@ public class Variant {
 
     private final int startPos;
     private final int endPos;
+
+    private final boolean multiallelic;
+    private final boolean altered;
+
+    private final Integer sampleCount;
+
     private final String color;
     private final List<String> genes;
     private final String label;
 
-    public Variant(String chr, String pos, String ref, String alt, JsonObject variantJson) {
+    public Variant(
+            String chr,
+            String pos,
+            String ref,
+            String alt,
+            JsonObject variantJson,
+            boolean multiallelic,
+            boolean altered,
+            Integer sampleCount
+    ) {
         this.chr = chr;
         this.ref = ref;
         this.alt = alt;
@@ -25,6 +40,12 @@ public class Variant {
 
         this.startPos = Integer.parseInt(pos);
         this.endPos = startPos + ref.length() - 1;
+
+        this.multiallelic = multiallelic;
+        this.altered = altered;
+
+        this.sampleCount = sampleCount;
+
         this.color = "grey"; // TODO: Implement...
         this.genes = new ArrayList<>(); // TODO: Implement...
         this.label = constructLabel();
@@ -52,6 +73,18 @@ public class Variant {
 
     public int getEndPos() {
         return this.endPos;
+    }
+
+    public boolean getMultiallelic() {
+        return this.multiallelic;
+    }
+
+    public boolean getAltered() {
+        return this.altered;
+    }
+
+    public Integer getSampleCount() {
+        return this.sampleCount;
     }
 
     public String getColor() {

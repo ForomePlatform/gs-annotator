@@ -26,8 +26,10 @@ public class Anfisa implements AnfisaConstants {
 
     public Anfisa(Variant variant, List<Integer> mappedGt) {
         this.variant = variant;
+
         this.preprocessedData = new HashMap<>();
         this.preprocessedData.put(MAPPED_GT_PREPROCESSED_DATA_MAP_KEY, mappedGt);
+
         this.anfisaJson = new JsonObject();
     }
 

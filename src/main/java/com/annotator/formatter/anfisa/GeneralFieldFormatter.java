@@ -32,6 +32,9 @@ public class GeneralFieldFormatter implements Formatter {
             put("end", (Supplier<Integer>) variant::getEndPos);
             put("ref", (Supplier<String>) variant::getRef);
             put("alt", (Supplier<String>) variant::getAlt);
+            put("multiallelic", (Supplier<Boolean>) variant::getMultiallelic);
+            put("altered_vcf", (Supplier<Boolean>) variant::getAltered);
+            put("num_samples", (Supplier<Integer>) variant::getSampleCount);
             put("color", (Supplier<String>) variant::getColor);
             put("genes", (Supplier<String>) variant::getGenes);
             put("label", (Supplier<String>) variant::getLabel);
