@@ -2,7 +2,26 @@
 
 image:https://img.shields.io/badge/Vert.x-4.5.9-purple.svg[link="https://vertx.io/"]
 
+== Overview
+
+GS-Annotator is a next-generation variant annotation platform designed for demanding research and clinical genomics workflows.
+It introduces an architecture optimized for speed, extensibility, and deployment simplicity.
+
+The system processes standard VCF files and integrates annotations from curated gene models, clinical databases, population frequencies, and in silico prediction algorithms.
+Its flexible plugin framework and open API facilitate integration of custom annotation sources such as specialized variant scoring algorithms or domain-specific databases.
+
+GS-Annotator's backend leverages link:https://github.com/ForomePlatform/AStorage-Java[AStorage] - a specialized server built on RocksDB, a high-performance embedded key-value store renowned for its efficient read/write operations on large datasets.
+This design is particularly beneficial in genomics, where queries must handle high variant counts with minimal latency.
+The system can support interactive analyses and batch processing of millions of variants while offloading compute-intensive tasks, substantially minimizing local resource consumption.
+
+The Java-based API server utilizes Vert.x, an event-driven toolkit that ensures responsive performance across concurrent requests.
+Users can access functionality through an intuitive command-line interface or a RESTful API (documented with OpenAPI), enabling seamless integration with bioinformatics pipelines and downstream applications.
+
+Additional features include support for genome liftover between reference assemblies and deep integration with link:https://github.com/ForomePlatform/anfisa[AnFiSA], a comprehensive variant curation platform.
+Together, these tools create an end-to-end solution from variant calling to clinical interpretation.
+
 == Supported annotation databases:
+
 * dbNSFP v4.3a
 * gnomAD v4
 * SpliceAI v1.3
@@ -11,12 +30,14 @@ image:https://img.shields.io/badge/Vert.x-4.5.9-purple.svg[link="https://vertx.i
 * dbSNP
 
 === Supported assembly versions:
+
 * GRCh37
 * GRCh38
 
 == Setup: Building and Running [Linux/MacOS]
 
 Clone the master branch and package the application as a JAR file:
+
 [source,bash]
 ----
 git clone git@github.com:ForomePlatform/gs-annotator.git
@@ -32,6 +53,7 @@ The JAR file will be generated inside the *target* directory as *annotator-1.0.0
 NOTE: These properties can be adjusted using a *config.json* file.
 
 *config.json* example:
+
 [source,json]
 ----
 {
@@ -42,19 +64,22 @@ NOTE: These properties can be adjusted using a *config.json* file.
 ----
 
 To start the application run:
+
 [source,bash]
 ----
 cd target
 java -jar annotator-1.0.0.jar [config_json_path]
 ----
 
-NOTE: Annotator logs are being written in <dataDirectoryPath>/output_<currentTimeMillis>.log file. Some of the output is printed in terminal where the program is being run.
+NOTE: Annotator logs are being written in <dataDirectoryPath>/output_<currentTimeMillis>.log file.
+Some of the output is printed in terminal where the program is being run.
 
-For detailed API specification access the Swagger UI via: http://localhost:8000/api.
+For detailed API specification access the OpenAPI UI via: http://localhost:8000/api.
 
 == Annotation
 
-To perform annotation of variants in your specified VCF you'll need three files: input *.vcf* file, annotation configuration *.cfg* file and PLINK sample information *.fam* file. In case of performing VCF liftover additional files will be required.
+To perform annotation of variants in your specified VCF you'll need three files: input *.vcf* file, annotation configuration *.cfg* file and PLINK sample information *.fam* file.
+In case of performing VCF liftover additional files will be required.
 
 NOTE: To use the annotation service AStorage service should be running on the configured AStorage server URL.
 
@@ -67,16 +92,19 @@ The configuration file supports these fields:
 - "assembly": Final assembly version of the given VCF file (After VCF liftover, if performed).
 - "performLiftover": Boolean field to indicate if liftover should be performed to the given VCF.
 
-NOTE: If "performLiftover" field is set to *true*, "chainFilePath" and "fastaFilePath" are mandatory. These files can be downloaded from link:https://hgdownload.soe.ucsc.edu/downloads.html[UCSC Genome Browser].
+NOTE: If "performLiftover" field is set to *true*, "chainFilePath" and "fastaFilePath" are mandatory.
+These files can be downloaded from link:https://hgdownload.soe.ucsc.edu/downloads.html[UCSC Genome Browser].
 
 NOTE: VCF liftover and all the necessary steps for it are performed using tools from link:https://broadinstitute.github.io/picard/[Picard].
 
 - "chainFilePath": Local path to an appropriate Chain file.
 - "fastaFilePath": Local path to an appropriate FASTA file.
 
-NOTE: VCF liftover requires an appropraite .dict file alongside the FASTA file. If such file can't be located it'll be automatically generated in the same directory as FASTA.
+NOTE: VCF liftover requires an appropraite .dict file alongside the FASTA file.
+If such file can't be located it'll be automatically generated in the same directory as FASTA.
 
 *.cfg* file example if the original VCF is in *GRCh37*, and we want to liftover it to *GRCh38*:
+
 [source,json]
 ----
 {
@@ -90,6 +118,7 @@ NOTE: VCF liftover requires an appropraite .dict file alongside the FASTA file. 
 ==== PLINK sample information .fam file:
 
 *.fam* file example:
+
 [source,text]
 ----
 1	bgm9001a1	bgm9001u2	bgm9001u1	1	2
